@@ -1,0 +1,84 @@
+<footer class="footer" id="main-footer">
+  <div class="footer-container">
+    <div class="footer-grid">
+      <!-- Brand -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">
+            <span class="material-icons-outlined">water_drop</span>
+          </div>
+          <div>
+            <span class="footer-brand-name">MWC</span>
+            <span class="footer-brand-tagline">TRUSTED QUALITY. ALWAYS</span>
+          </div>
+        </div>
+        <p class="footer-description">
+          Your trusted partner for premium water solutions. Quality products backed by reliable warranty and expert support.
+        </p>
+        <div class="footer-social">
+          <a href="#" class="social-link" id="social-facebook" aria-label="Facebook">
+            <span class="material-icons-outlined">thumb_up</span>
+          </a>
+          <a href="#" class="social-link" id="social-twitter" aria-label="Twitter">
+            <span class="material-icons-outlined">tag</span>
+          </a>
+          <a href="#" class="social-link" id="social-instagram" aria-label="Instagram">
+            <span class="material-icons-outlined">photo_camera</span>
+          </a>
+          <a href="#" class="social-link" id="social-youtube" aria-label="YouTube">
+            <span class="material-icons-outlined">play_circle</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Quick Links</h4>
+        <ul class="footer-links">
+          @for (link of quickLinks; track link.path) {
+            <li>
+              <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Support</h4>
+        <ul class="footer-links">
+          @for (link of supportLinks; track link.label) {
+            <li>
+              <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Contact</h4>
+        <div class="footer-contact">
+          <div class="contact-item">
+            <span class="material-icons-outlined">phone</span>
+            <span>1800-123-4567</span>
+          </div>
+          <div class="contact-item">
+            <span class="material-icons-outlined">email</span>
+            <span>support&#64;mwcsystem.com</span>
+          </div>
+          <div class="contact-item">
+            <span class="material-icons-outlined">location_on</span>
+            <span>Mumbai, Maharashtra, India</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <p>&copy; {{ currentYear }} MWC System. All rights reserved.</p>
+      <p class="footer-credits">Designed with <span class="heart">♥</span> for quality</p>
+    </div>
+  </div>
+</footer>

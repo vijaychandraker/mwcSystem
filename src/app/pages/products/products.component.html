@@ -1,0 +1,37 @@
+<section class="page-hero">
+  <div class="page-hero-content">
+    <h1>Our <span class="highlight">Products</span></h1>
+    <p>Premium water solutions designed for every need. Quality you can trust.</p>
+  </div>
+</section>
+
+<section class="products-section">
+  <div class="products-container">
+    <div class="products-grid">
+      @for (product of products; track product.name) {
+        <div class="product-card">
+          <div class="product-badge">{{ product.badge }}</div>
+          <div class="product-visual">
+            <span class="material-icons-outlined product-icon">{{ product.icon }}</span>
+          </div>
+          <div class="product-info">
+            <span class="product-category">{{ product.category }}</span>
+            <h3 class="product-name">{{ product.name }}</h3>
+            <ul class="product-features">
+              @for (feat of product.features; track feat) {
+                <li>
+                  <span class="material-icons-outlined">check_circle</span>
+                  {{ feat }}
+                </li>
+              }
+            </ul>
+            <div class="product-footer">
+              <span class="product-price">{{ product.price }}</span>
+              <a routerLink="/warranty-check" class="product-btn">Check Warranty</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

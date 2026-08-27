@@ -1,0 +1,34 @@
+<section class="page-hero">
+  <div class="page-hero-content">
+    <h1>Our <span class="highlight">Services</span></h1>
+    <p>Complete service solutions to ensure your products perform at their best.</p>
+  </div>
+</section>
+
+<section class="service-section">
+  <div class="service-container">
+    <div class="service-grid">
+      @for (service of services; track service.title) {
+        <div class="service-card">
+          <div class="service-icon-wrap">
+            <span class="material-icons-outlined">{{ service.icon }}</span>
+          </div>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.desc }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- CTA -->
+    <div class="service-cta">
+      <div class="cta-content">
+        <h2>Need Service?</h2>
+        <p>Call our toll-free number for instant support and service booking.</p>
+        <a href="tel:1800-123-4567" class="cta-btn">
+          <span class="material-icons-outlined">phone</span>
+          1800-123-4567
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

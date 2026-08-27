@@ -1,0 +1,316 @@
+<section class="page-hero">
+  <div class="page-hero-content">
+    <h1>Warranty <span class="highlight">Check Portal</span></h1>
+    <p>Verify your product warranty status instantly with your unique serial number.</p>
+  </div>
+</section>
+
+<section class="warranty-section">
+  <div class="warranty-container">
+    <!-- Search Card -->
+    <div class="warranty-search-card">
+      <div class="search-header">
+        <span class="material-icons-outlined search-header-icon">verified_user</span>
+        <h2>Check Product Warranty</h2>
+        <p>Enter your product serial number below to view instant status.</p>
+      </div>
+
+      <div class="search-form">
+        <div class="input-group">
+          <span class="material-icons-outlined input-icon">qr_code_scanner</span>
+          <input
+            type="text"
+            [(ngModel)]="serialNumber"
+            placeholder="Enter Serial Number (e.g., MASTO-240815-000123 or MWC-10001)"
+            class="warranty-input"
+            id="warranty-serial-input"
+            (keyup.enter)="checkWarranty()"
+          />
+        </div>
+        <div class="search-actions">
+          <button
+            class="btn-check"
+            id="btn-check-warranty"
+            (click)="checkWarranty()"
+            [disabled]="isSearching || !serialNumber.trim()">
+            @if (isSearching) {
+              <span class="spinner"></span>
+              Checking...
+            } @else {
+              <span class="material-icons-outlined">search</span>
+              Check Warranty
+            }
+          </button>
+          @if (warrantyResult) {
+            <button class="btn-reset" (click)="resetSearch()" id="btn-reset-warranty">
+              <span class="material-icons-outlined">refresh</span>
+              New Search
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Note Callout Banner (Matching Image 2) -->
+      <div class="note-banner">
+        <div class="note-left">
+          <span class="material-icons-outlined note-bulb">lightbulb</span>
+          <div class="note-text">
+            <strong>NOTE : Each product must have a Unique Serial Number.</strong>
+            <p>It should be printed on product, warranty card and invoice.</p>
+          </div>
+        </div>
+        <div class="barcode-badge">
+          <span class="barcode-tag">Serial No. <strong>MASTO-240815-000123</strong></span>
+          <div class="barcode-lines"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Cards (Matching Image 1 Mockups) -->
+    @if (warrantyResult) {
+      <div class="warranty-result animate-fade-in-up">
+        @if (warrantyResult.found) {
+          @if (warrantyResult.status === 'Active') {
+            <!-- RESULT - WARRANTY ACTIVE -->
+            <div class="result-card-mockup active-card">
+              <div class="card-status-header active-header">
+                <div class="shield-icon green-shield">
+                  <span class="material-icons-outlined">check</span>
+                </div>
+                <div class="status-title-group">
+                  <h3 class="status-title text-green">WARRANTY ACTIVE</h3>
+                  <p class="status-subtitle">Your product is under warranty.</p>
+                </div>
+              </div>
+
+              <div class="mockup-table">
+                <div class="table-row">
+                  <span class="col-label">Product Name</span>
+                  <span class="col-val">{{ warrantyResult.productName || warrantyResult.product }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Serial Number</span>
+                  <span class="col-val font-mono">{{ warrantyResult.serialNo || warrantyResult.serial }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Installation Date</span>
+                  <span class="col-val">{{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Period</span>
+                  <span class="col-val">{{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months (1 Year)' }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Valid Till</span>
+                  <span class="col-val">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                </div>
+                <div class="table-row highlight-row green-bg">
+                  <span class="col-label text-green-dark">Warranty Remaining</span>
+                  <span class="col-val text-green-dark bold-lg">{{ warrantyResult.daysRemaining }} Days</span>
+                </div>
+              </div>
+
+              <div class="info-alert green-alert">
+                <span class="material-icons-outlined">info</span>
+                <span>For any service or support, please contact our helpline.</span>
+              </div>
+
+              <button class="btn-dark-navy" (click)="downloadWarrantyCard()" id="btn-download-card">
+                <span class="material-icons-outlined">download</span>
+                DOWNLOAD WARRANTY CARD
+              </button>
+            </div>
+          } @else {
+            <!-- RESULT - WARRANTY EXPIRED -->
+            <div class="result-card-mockup expired-card">
+              <div class="card-status-header expired-header">
+                <div class="shield-icon red-shield">
+                  <span class="material-icons-outlined">close</span>
+                </div>
+                <div class="status-title-group">
+                  <h3 class="status-title text-red">WARRANTY EXPIRED</h3>
+                  <p class="status-subtitle">Your product warranty has expired.</p>
+                </div>
+              </div>
+
+              <div class="mockup-table">
+                <div class="table-row">
+                  <span class="col-label">Product Name</span>
+                  <span class="col-val">{{ warrantyResult.productName || warrantyResult.product }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Serial Number</span>
+                  <span class="col-val font-mono">{{ warrantyResult.serialNo || warrantyResult.serial }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Installation Date</span>
+                  <span class="col-val">{{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Period</span>
+                  <span class="col-val">{{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months (1 Year)' }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Valid Till</span>
+                  <span class="col-val">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                </div>
+                <div class="table-row highlight-row red-bg">
+                  <span class="col-label text-red-dark">Warranty Expired On</span>
+                  <span class="col-val text-red-dark bold-lg">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                </div>
+              </div>
+
+              <div class="info-alert red-alert">
+                <span class="material-icons-outlined">info</span>
+                <span>Your warranty period has expired. You can still book a paid service.</span>
+              </div>
+
+              <a routerLink="/service" [queryParams]="{ serial: warrantyResult.serialNo || warrantyResult.serial, type: 'Repair' }" class="btn-dark-navy link-btn" id="btn-book-service">
+                <span class="material-icons-outlined">handyman</span>
+                BOOK PAID SERVICE
+              </a>
+            </div>
+          }
+        } @else {
+          <!-- NOT FOUND -->
+          <div class="result-card-mockup error-card">
+            <div class="card-status-header expired-header">
+              <div class="shield-icon red-shield">
+                <span class="material-icons-outlined">help_outline</span>
+              </div>
+              <div class="status-title-group">
+                <h3 class="status-title text-red">RECORD NOT FOUND</h3>
+                <p class="status-subtitle">No warranty details matching this serial number.</p>
+              </div>
+            </div>
+            <p class="error-msg-text">{{ warrantyResult.message }}</p>
+            <div class="error-links-group">
+              <a href="tel:1800-123-4567" class="btn-outline">
+                <span class="material-icons-outlined">phone</span>
+                Call Helpline
+              </a>
+              <a routerLink="/contact" class="btn-outline">
+                <span class="material-icons-outlined">email</span>
+                Contact Support
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</section>
+
+<!-- Printable Certificate Modal -->
+@if (showCardModal && warrantyResult && warrantyResult.found) {
+  <div class="modal-backdrop" (click)="closeCardModal()">
+    <div class="modal-content print-area" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Warranty Certificate Preview</h3>
+        <button class="btn-close" (click)="closeCardModal()">
+          <span class="material-icons-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="card-certificate modal-cert">
+        <div class="cert-header">
+          <div class="brand-logo">
+            <span class="brand-title">MASTO / MWC</span>
+            <span class="brand-tagline">TRUSTED QUALITY ALWAYS</span>
+          </div>
+          <div class="cert-title">OFFICIAL WARRANTY CERTIFICATE</div>
+        </div>
+
+        <div class="cert-body">
+          <div class="product-thumb">
+            <span class="material-icons-outlined thumb-icon">water_drop</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-row"><span>Product Name</span><span>: {{ warrantyResult.productName || warrantyResult.product }}</span></div>
+            <div class="cert-row"><span>Serial Number</span><span>: {{ warrantyResult.serialNo || warrantyResult.serial }}</span></div>
+            <div class="cert-row"><span>Customer Name</span><span>: {{ warrantyResult.customerName || 'Registered Customer' }}</span></div>
+            <div class="cert-row"><span>Installation Date</span><span>: {{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span></div>
+            <div class="cert-row"><span>Warranty Period</span><span>: {{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months' }}</span></div>
+            <div class="cert-row"><span>Warranty Valid Till</span><span>: {{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span></div>
+          </div>
+        </div>
+
+        <div class="cert-footer">
+          <div class="status-pill" [class.expired-pill]="warrantyResult.status === 'Expired'">
+            STATUS : WARRANTY {{ warrantyResult.status.toUpperCase() }}
+          </div>
+          <div class="footer-right">
+            <div class="qr-placeholder">
+              <svg class="qr-code-svg" width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" fill="white" rx="6"/>
+                <!-- Position Detection Patterns -->
+                <rect x="6" y="6" width="28" height="28" fill="#0b2545" rx="3"/>
+                <rect x="12" y="12" width="16" height="16" fill="white" rx="2"/>
+                <rect x="16" y="16" width="8" height="8" fill="#0b2545" rx="1"/>
+
+                <rect x="66" y="6" width="28" height="28" fill="#0b2545" rx="3"/>
+                <rect x="72" y="12" width="16" height="16" fill="white" rx="2"/>
+                <rect x="76" y="16" width="8" height="8" fill="#0b2545" rx="1"/>
+
+                <rect x="6" y="66" width="28" height="28" fill="#0b2545" rx="3"/>
+                <rect x="12" y="72" width="16" height="16" fill="white" rx="2"/>
+                <rect x="16" y="76" width="8" height="8" fill="#0b2545" rx="1"/>
+
+                <!-- Data Matrix Modules -->
+                <rect x="40" y="8" width="6" height="6" fill="#0b2545"/>
+                <rect x="50" y="8" width="6" height="6" fill="#0b2545"/>
+                <rect x="40" y="18" width="6" height="6" fill="#0b2545"/>
+                <rect x="54" y="18" width="6" height="6" fill="#0b2545"/>
+                <rect x="44" y="28" width="6" height="6" fill="#0b2545"/>
+                <rect x="54" y="28" width="6" height="6" fill="#0b2545"/>
+
+                <rect x="8" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="20" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="30" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="42" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="54" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="66" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="78" y="40" width="6" height="6" fill="#0b2545"/>
+                <rect x="88" y="40" width="6" height="6" fill="#0b2545"/>
+
+                <rect x="14" y="50" width="6" height="6" fill="#0b2545"/>
+                <rect x="44" y="50" width="6" height="6" fill="#0b2545"/>
+                <rect x="58" y="50" width="6" height="6" fill="#0b2545"/>
+                <rect x="70" y="50" width="6" height="6" fill="#0b2545"/>
+                <rect x="84" y="50" width="6" height="6" fill="#0b2545"/>
+
+                <rect x="40" y="64" width="6" height="6" fill="#0b2545"/>
+                <rect x="52" y="64" width="6" height="6" fill="#0b2545"/>
+                <rect x="64" y="64" width="6" height="6" fill="#0b2545"/>
+                <rect x="78" y="64" width="6" height="6" fill="#0b2545"/>
+
+                <rect x="44" y="76" width="6" height="6" fill="#0b2545"/>
+                <rect x="58" y="76" width="6" height="6" fill="#0b2545"/>
+                <rect x="70" y="76" width="6" height="6" fill="#0b2545"/>
+                <rect x="84" y="76" width="6" height="6" fill="#0b2545"/>
+
+                <rect x="40" y="86" width="6" height="6" fill="#0b2545"/>
+                <rect x="52" y="86" width="6" height="6" fill="#0b2545"/>
+                <rect x="66" y="86" width="6" height="6" fill="#0b2545"/>
+                <rect x="78" y="86" width="6" height="6" fill="#0b2545"/>
+              </svg>
+            </div>
+            <div class="signature">
+              <span class="sig-font">Ann Fram</span>
+              <span class="sig-title">Authorised Signatory</span>
+            </div>
+          </div>
+        </div>
+        <div class="cert-bottom-text">Thank you for choosing Masto / MWC products.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-dark-navy" (click)="downloadWarrantyCard()">
+          <span class="material-icons-outlined">print</span> Print / Save Certificate
+        </button>
+        <button class="btn-reset" (click)="closeCardModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}

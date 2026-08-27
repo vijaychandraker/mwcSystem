@@ -1,0 +1,74 @@
+<header class="header" id="main-header">
+  <div class="header-container">
+    <!-- Logo -->
+    <a routerLink="/" class="logo" id="logo-link" (click)="closeMobileMenu()">
+      <div class="logo-icon">
+        <span class="material-icons-outlined">water_drop</span>
+      </div>
+      <div class="logo-text">
+        <span class="logo-brand">MWC</span>
+        <span class="logo-tagline">TRUSTED QUALITY. ALWAYS</span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="nav-desktop" id="desktop-nav">
+      <ul class="nav-links">
+        @for (link of navLinks; track link.path) {
+          <li>
+            <a
+              [routerLink]="link.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+              class="nav-link"
+              [id]="'nav-' + link.label.toLowerCase().replace(' ', '-')">
+              {{ link.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- Phone & CTA -->
+    <div class="header-actions">
+      <a href="tel:1800-123-4567" class="phone-link" id="phone-link">
+        <span class="material-icons-outlined">phone</span>
+        <span>1800-123-4567</span>
+      </a>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button
+      class="mobile-toggle"
+      id="mobile-menu-toggle"
+      (click)="toggleMobileMenu()"
+      [class.active]="isMobileMenuOpen"
+      aria-label="Toggle menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="nav-mobile" [class.open]="isMobileMenuOpen" id="mobile-nav">
+    <ul class="mobile-nav-links">
+      @for (link of navLinks; track link.path) {
+        <li>
+          <a
+            [routerLink]="link.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+            class="mobile-nav-link"
+            (click)="closeMobileMenu()">
+            {{ link.label }}
+          </a>
+        </li>
+      }
+    </ul>
+    <a href="tel:1800-123-4567" class="mobile-phone">
+      <span class="material-icons-outlined">phone</span>
+      1800-123-4567
+    </a>
+  </nav>
+</header>

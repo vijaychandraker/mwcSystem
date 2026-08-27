@@ -1,0 +1,119 @@
+<section class="hero" id="hero-section">
+  <!-- Background Decorations -->
+  <div class="hero-bg">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+    <div class="bg-wave"></div>
+  </div>
+
+  <div class="hero-container">
+    <!-- Left Content -->
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-in">
+        <span class="material-icons-outlined">verified</span>
+        Reference Portal
+      </div>
+
+      <h1 class="hero-title animate-fade-in-up">
+        CHECK YOUR
+        <span class="title-highlight">WARRANTY</span>
+      </h1>
+
+      <p class="hero-subtitle animate-fade-in-up">
+        Enter your product Serial Number to check warranty status and remaining days.
+      </p>
+
+      <!-- Search Box -->
+      <div class="search-box animate-fade-in-up" id="warranty-search-box">
+        <div class="search-input-wrapper">
+          <span class="material-icons-outlined search-icon">search</span>
+          <input
+            type="text"
+            [(ngModel)]="serialNumber"
+            placeholder="Enter Serial Number"
+            class="search-input"
+            id="serial-number-input"
+            (keyup.enter)="checkWarranty()"
+          />
+          @if (serialNumber) {
+            <button class="clear-btn" (click)="clearSearch()" id="clear-search-btn">
+              <span class="material-icons-outlined">close</span>
+            </button>
+          }
+        </div>
+        <button
+          class="search-btn"
+          id="check-warranty-btn"
+          (click)="checkWarranty()"
+          [disabled]="isSearching || !serialNumber.trim()">
+          @if (isSearching) {
+            <span class="spinner"></span>
+            Checking...
+          } @else {
+            CHECK WARRANTY
+          }
+        </button>
+      </div>
+
+      <!-- Search Result -->
+      @if (searchResult) {
+        <div class="search-result animate-fade-in-up" [class.success]="searchResult.found" [class.error]="!searchResult.found">
+          @if (searchResult.found) {
+            <div class="result-icon success-icon">
+              <span class="material-icons-outlined">check_circle</span>
+            </div>
+            <div class="result-info">
+              <span class="result-status">{{ searchResult.message }}</span>
+              <span class="result-detail">{{ searchResult.daysRemaining }} days remaining</span>
+            </div>
+          } @else {
+            <div class="result-icon error-icon">
+              <span class="material-icons-outlined">error_outline</span>
+            </div>
+            <div class="result-info">
+              <span class="result-status">Not Found</span>
+              <span class="result-detail">{{ searchResult.message }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Trust Badges -->
+      <div class="trust-badges animate-fade-in-up">
+        <div class="badge">
+          <span class="material-icons-outlined">shield</span>
+          100% Secure
+        </div>
+        <div class="badge-separator">|</div>
+        <div class="badge">
+          <span class="material-icons-outlined">bolt</span>
+          Instant Result
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Product Visual -->
+    <div class="hero-visual">
+      <div class="product-showcase">
+        <div class="product-glow"></div>
+        <div class="product-card">
+          <div class="product-image-placeholder">
+            <span class="material-icons-outlined product-icon">water_drop</span>
+            <div class="product-label">MWC</div>
+            <div class="product-sublabel">Premium Series</div>
+          </div>
+        </div>
+        <!-- Floating Elements -->
+        <div class="float-badge float-badge-1">
+          <span class="material-icons-outlined">verified_user</span>
+          <span>Certified</span>
+        </div>
+        <div class="float-badge float-badge-2">
+          <span class="material-icons-outlined">workspace_premium</span>
+          <span>Premium</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
