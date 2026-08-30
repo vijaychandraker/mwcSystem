@@ -5,6 +5,7 @@ import { ProductsComponent } from './pages/products/products.component';
 import { WarrantyCheckComponent } from './pages/warranty-check/warranty-check.component';
 import { ServiceComponent } from './pages/service/service.component';
 import { ContactComponent } from './pages/contact/contact.component';
+import { AdminComponent } from './pages/admin/admin.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'warranty-check', component: WarrantyCheckComponent },
   { path: 'service', component: ServiceComponent },
   { path: 'contact', component: ContactComponent },
+  { path: 'admin', component: AdminComponent },
   { path: '**', redirectTo: '' }
 ];

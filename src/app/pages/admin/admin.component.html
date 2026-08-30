@@ -1,0 +1,430 @@
+<section class="admin-page">
+  <!-- Top Banner -->
+  <div class="admin-header">
+    <div class="admin-header-container">
+      <div class="admin-title-area">
+        <span class="material-icons-outlined admin-badge-icon">admin_panel_settings</span>
+        <div>
+          <h1>MWC Admin Portal</h1>
+          <p>System Overview & Data Management Center</p>
+        </div>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="admin-search-bar">
+        <span class="material-icons-outlined search-icon">search</span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search serial, product, or customer..."
+          class="admin-search-input"
+        />
+        @if (searchQuery) {
+          <button (click)="searchQuery = ''" class="clear-btn">
+            <span class="material-icons-outlined">close</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-container">
+    <!-- Navigation Tabs -->
+    <div class="admin-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'overview'"
+        (click)="activeTab = 'overview'">
+        <span class="material-icons-outlined">dashboard</span>
+        Overview
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'warranties'"
+        (click)="activeTab = 'warranties'">
+        <span class="material-icons-outlined">verified_user</span>
+        Warranties ({{ warranties.length }})
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'products'"
+        (click)="activeTab = 'products'">
+        <span class="material-icons-outlined">inventory_2</span>
+        Products ({{ products.length }})
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'service'"
+        (click)="activeTab = 'service'">
+        <span class="material-icons-outlined">build</span>
+        Service Tickets ({{ tickets.length }})
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'customers'"
+        (click)="activeTab = 'customers'">
+        <span class="material-icons-outlined">people</span>
+        Customers ({{ customers.length }})
+      </button>
+    </div>
+
+    <!-- 1. OVERVIEW TAB -->
+    @if (activeTab === 'overview') {
+      <div class="overview-grid animate-fade-in">
+        <!-- KPI Cards -->
+        <div class="kpi-card blue">
+          <div class="kpi-icon">
+            <span class="material-icons-outlined">inventory_2</span>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ products.length }}</span>
+            <span class="kpi-label">Active Products</span>
+          </div>
+        </div>
+
+        <div class="kpi-card green">
+          <div class="kpi-icon">
+            <span class="material-icons-outlined">verified_user</span>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ warranties.length }}</span>
+            <span class="kpi-label">Registered Warranties</span>
+          </div>
+        </div>
+
+        <div class="kpi-card orange">
+          <div class="kpi-icon">
+            <span class="material-icons-outlined">engineering</span>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ tickets.length }}</span>
+            <span class="kpi-label">Service Requests</span>
+          </div>
+        </div>
+
+        <div class="kpi-card purple">
+          <div class="kpi-icon">
+            <span class="material-icons-outlined">people</span>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ customers.length }}</span>
+            <span class="kpi-label">Total Customers</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Overview Tables -->
+      <div class="overview-tables animate-fade-in">
+        <div class="admin-card">
+          <div class="card-header">
+            <h3>Recent Warranties</h3>
+            <button class="btn-action-sm" (click)="activeTab = 'warranties'">View All</button>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Serial Number</th>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of warranties.slice(0, 3); track item.id) {
+                <tr>
+                  <td><code>{{ item.serialNumber }}</code></td>
+                  <td>{{ item.productName }}</td>
+                  <td>{{ item.customerName }}</td>
+                  <td><span class="badge" [class.badge-success]="item.status === 'Active'" [class.badge-danger]="item.status === 'Expired'">{{ item.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <h3>Recent Service Requests</h3>
+            <button class="btn-action-sm" (click)="activeTab = 'service'">View All</button>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ticket of tickets.slice(0, 3); track ticket.id) {
+                <tr>
+                  <td><code>{{ ticket.id }}</code></td>
+                  <td>{{ ticket.customerName }}</td>
+                  <td>{{ ticket.type }}</td>
+                  <td><span class="badge" [class.badge-warning]="ticket.status === 'Pending'" [class.badge-primary]="ticket.status === 'In Progress'" [class.badge-success]="ticket.status === 'Completed'">{{ ticket.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- 2. WARRANTIES TAB -->
+    @if (activeTab === 'warranties') {
+      <div class="admin-card animate-fade-in">
+        <div class="card-header">
+          <div>
+            <h2>Warranties Directory</h2>
+            <p>Manage product warranties and serial numbers</p>
+          </div>
+          <button class="btn-primary" (click)="showAddWarrantyModal = true">
+            <span class="material-icons-outlined">add</span> Register Warranty
+          </button>
+        </div>
+
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Serial Number</th>
+              <th>Product Name</th>
+              <th>Customer</th>
+              <th>Purchase Date</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (w of filteredWarranties; track w.id) {
+              <tr>
+                <td>#{{ w.id }}</td>
+                <td><code class="serial-tag">{{ w.serialNumber }}</code></td>
+                <td>{{ w.productName }}</td>
+                <td>{{ w.customerName }}</td>
+                <td>{{ w.purchaseDate }}</td>
+                <td>{{ w.expiryDate }}</td>
+                <td><span class="badge" [class.badge-success]="w.status === 'Active'" [class.badge-danger]="w.status === 'Expired'">{{ w.status }}</span></td>
+                <td>
+                  <button class="icon-btn-delete" (click)="deleteWarranty(w.id)" title="Delete Warranty">
+                    <span class="material-icons-outlined">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- 3. PRODUCTS TAB -->
+    @if (activeTab === 'products') {
+      <div class="admin-card animate-fade-in">
+        <div class="card-header">
+          <div>
+            <h2>Product Catalog Manager</h2>
+            <p>Manage water purifiers and pricing</p>
+          </div>
+          <button class="btn-primary" (click)="showAddProductModal = true">
+            <span class="material-icons-outlined">add</span> Add New Product
+          </button>
+        </div>
+
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Price (₹)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filteredProducts; track p.id) {
+              <tr>
+                <td><code>{{ p.code }}</code></td>
+                <td class="font-bold">{{ p.name }}</td>
+                <td>{{ p.category }}</td>
+                <td>₹{{ p.price | number }}</td>
+                <td><span class="badge badge-success">{{ p.status }}</span></td>
+                <td>
+                  <button class="icon-btn-delete" (click)="deleteProduct(p.id)" title="Delete Product">
+                    <span class="material-icons-outlined">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- 4. SERVICE TICKETS TAB -->
+    @if (activeTab === 'service') {
+      <div class="admin-card animate-fade-in">
+        <div class="card-header">
+          <div>
+            <h2>Service Tickets & Repairs</h2>
+            <p>Track and update customer service bookings</p>
+          </div>
+        </div>
+
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Customer</th>
+              <th>Serial Number</th>
+              <th>Service Type</th>
+              <th>Scheduled Date</th>
+              <th>Status</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of filteredTickets; track t.id) {
+              <tr>
+                <td><code>{{ t.id }}</code></td>
+                <td>{{ t.customerName }}</td>
+                <td><code>{{ t.serialNumber }}</code></td>
+                <td>{{ t.type }}</td>
+                <td>{{ t.scheduledDate }}</td>
+                <td><span class="badge" [class.badge-warning]="t.status === 'Pending'" [class.badge-primary]="t.status === 'In Progress'" [class.badge-success]="t.status === 'Completed'">{{ t.status }}</span></td>
+                <td>
+                  <select [ngModel]="t.status" (ngModelChange)="updateTicketStatus(t, $event)" class="select-status">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- 5. CUSTOMERS TAB -->
+    @if (activeTab === 'customers') {
+      <div class="admin-card animate-fade-in">
+        <div class="card-header">
+          <div>
+            <h2>Customer Directory</h2>
+            <p>Registered customer profile details</p>
+          </div>
+        </div>
+
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>City</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of customers; track c.id) {
+              <tr>
+                <td>#{{ c.id }}</td>
+                <td class="font-bold">{{ c.name }}</td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.phone }}</td>
+                <td>{{ c.city }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL: Add Warranty -->
+  @if (showAddWarrantyModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Register New Warranty</h3>
+          <button (click)="showAddWarrantyModal = false" class="close-btn">&times;</button>
+        </div>
+        <form (ngSubmit)="addWarranty()">
+          <div class="form-group">
+            <label>Serial Number *</label>
+            <input type="text" [(ngModel)]="newWarranty.serialNumber" name="sn" placeholder="e.g. MWC-55555" required />
+          </div>
+          <div class="form-group">
+            <label>Customer Name *</label>
+            <input type="text" [(ngModel)]="newWarranty.customerName" name="cn" placeholder="Customer Name" required />
+          </div>
+          <div class="form-group">
+            <label>Product Name</label>
+            <select [(ngModel)]="newWarranty.productName" name="pn">
+              @for (p of products; track p.id) {
+                <option [value]="p.name">{{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Purchase Date</label>
+              <input type="date" [(ngModel)]="newWarranty.purchaseDate" name="pd" />
+            </div>
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="date" [(ngModel)]="newWarranty.expiryDate" name="ed" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="showAddWarrantyModal = false">Cancel</button>
+            <button type="submit" class="btn-primary">Save Warranty</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: Add Product -->
+  @if (showAddProductModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Add New Product</h3>
+          <button (click)="showAddProductModal = false" class="close-btn">&times;</button>
+        </div>
+        <form (ngSubmit)="addProduct()">
+          <div class="form-group">
+            <label>Product Code *</label>
+            <input type="text" [(ngModel)]="newProduct.code" name="pc" placeholder="e.g. MWC-PRO100" required />
+          </div>
+          <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" [(ngModel)]="newProduct.name" name="pn" placeholder="e.g. MWC UltraFlow 900" required />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="newProduct.category" name="cat">
+              <option value="RO Water Purifier">RO Water Purifier</option>
+              <option value="UV Water Purifier">UV Water Purifier</option>
+              <option value="RO+UV+UF Purifier">RO+UV+UF Purifier</option>
+              <option value="Commercial Purifier">Commercial Purifier</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" [(ngModel)]="newProduct.price" name="pr" placeholder="15999" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="showAddProductModal = false">Cancel</button>
+            <button type="submit" class="btn-primary">Create Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

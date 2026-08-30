@@ -17,7 +17,8 @@ export class HeaderComponent {
     { label: 'Products', path: '/products' },
     { label: 'Warranty Check', path: '/warranty-check' },
     { label: 'Service', path: '/service' },
-    { label: 'Contact Us', path: '/contact' }
+    { label: 'Contact Us', path: '/contact' },
+    { label: 'Admin Portal', path: '/admin' }
   ];
 
   toggleMobileMenu() {
