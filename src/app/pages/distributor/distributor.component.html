@@ -1,0 +1,467 @@
+<section class="distributor-page">
+  <!-- Top Banner -->
+  <div class="distributor-header">
+    <div class="header-container">
+      <div class="partner-info-bar">
+        <div class="partner-badge">
+          <span class="material-icons-outlined partner-icon">storefront</span>
+          <div>
+            <h1>{{ distributorInfo.name }}</h1>
+            <p><span class="badge-code">{{ distributorInfo.code }}</span> | {{ distributorInfo.region }}</p>
+          </div>
+        </div>
+
+        <div class="tier-tag">
+          <span class="material-icons-outlined">military_tech</span>
+          {{ distributorInfo.tier }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="distributor-container">
+    <!-- Success Banner Notification -->
+    @if (orderSuccessMessage) {
+      <div class="alert-success animate-fade-in">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>{{ orderSuccessMessage }}</span>
+      </div>
+    }
+
+    <!-- Tabs Navigation -->
+    <div class="distributor-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'catalog'"
+        (click)="activeTab = 'catalog'">
+        <span class="material-icons-outlined">shopping_bag</span>
+        Wholesale Order Catalog
+      </button>
+
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'orders'"
+        (click)="activeTab = 'orders'">
+        <span class="material-icons-outlined">local_shipping</span>
+        My Orders ({{ orders.length }})
+      </button>
+
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'activation'"
+        (click)="activeTab = 'activation'">
+        <span class="material-icons-outlined">how_to_reg</span>
+        Customer Warranty Activation
+      </button>
+
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'analytics'"
+        (click)="activeTab = 'analytics'">
+        <span class="material-icons-outlined">analytics</span>
+        Territory Performance
+      </button>
+    </div>
+
+    <!-- 1. WHOLESALE CATALOG TAB -->
+    @if (activeTab === 'catalog') {
+      <div class="catalog-layout animate-fade-in">
+        <!-- Products Grid -->
+        <div class="products-list">
+          <div class="section-title">
+            <h2>Distributor Wholesale Pricing</h2>
+            <p>Select unit quantities for bulk order placement</p>
+          </div>
+
+          <div class="wholesale-grid">
+            @for (p of products; track p.id) {
+              <div class="wholesale-card">
+                <div class="wholesale-header">
+                  <code>{{ p.code }}</code>
+                  <span class="stock-tag">In Stock: {{ p.stockAvailable }} units</span>
+                </div>
+                <h3>{{ p.name }}</h3>
+                <span class="category-text">{{ p.category }}</span>
+
+                <div class="price-breakdown">
+                  <div class="price-item">
+                    <span class="price-label">Retail Price</span>
+                    <span class="price-value strike">₹{{ p.retailPrice | number }}</span>
+                  </div>
+                  <div class="price-item highlight">
+                    <span class="price-label">Wholesale Price</span>
+                    <span class="price-value">₹{{ p.wholesalePrice | number }}</span>
+                  </div>
+                </div>
+
+                <!-- Quantity Selector -->
+                <div class="qty-selector">
+                  <span class="qty-label">Order Units:</span>
+                  <div class="qty-controls">
+                    <button (click)="updateQty(p, -5)" class="btn-qty">-5</button>
+                    <button (click)="updateQty(p, -1)" class="btn-qty">-1</button>
+                    <input type="number" [(ngModel)]="p.orderQty" class="qty-input" min="0" />
+                    <button (click)="updateQty(p, 1)" class="btn-qty">+1</button>
+                    <button (click)="updateQty(p, 5)" class="btn-qty">+5</button>
+                  </div>
+                </div>
+
+                @if (p.orderQty > 0) {
+                  <div class="item-subtotal">
+                    Subtotal: <strong>₹{{ (p.orderQty * p.wholesalePrice) | number }}</strong>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Sticky Cart Summary Panel -->
+        <div class="cart-summary-panel">
+          <div class="summary-card">
+            <h3><span class="material-icons-outlined">shopping_cart</span> Bulk Order Summary</h3>
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+              <span>Total Selected Units</span>
+              <strong>{{ totalCartItems }} units</strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Wholesale Subtotal</span>
+              <strong>₹{{ totalCartValue | number }}</strong>
+            </div>
+
+            <div class="summary-row green">
+              <span>Distributor Margin Saved</span>
+              <strong>₹{{ totalCartSavings | number }}</strong>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <button
+              class="btn-place-order"
+              [disabled]="totalCartItems === 0"
+              (click)="showOrderModal = true">
+              <span class="material-icons-outlined">bolt</span>
+              Proceed Wholesale Checkout
+            </button>
+
+            <!-- Manager Card -->
+            <div class="manager-card">
+              <span class="material-icons-outlined manager-icon">support_agent</span>
+              <div>
+                <span class="mgr-title">Regional Account Manager</span>
+                <span class="mgr-name">{{ distributorInfo.manager }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- 2. MY ORDERS TAB -->
+    @if (activeTab === 'orders') {
+      <div class="dist-card animate-fade-in">
+        <div class="card-header">
+          <div>
+            <h2>Distributor Order History</h2>
+            <p>Track wholesale shipments and view invoices</p>
+          </div>
+        </div>
+
+        <table class="dist-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Order Date</th>
+              <th>Units Count</th>
+              <th>Total Amount</th>
+              <th>Tracking Number</th>
+              <th>Shipment Status</th>
+              <th>Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of orders; track o.orderId) {
+              <tr>
+                <td><code>{{ o.orderId }}</code></td>
+                <td>{{ o.date }}</td>
+                <td>{{ o.itemsCount }} units</td>
+                <td class="font-bold">₹{{ o.totalAmount | number }}</td>
+                <td><code class="tracking-code">{{ o.trackingNumber }}</code></td>
+                <td>
+                  <span class="badge"
+                    [class.badge-primary]="o.status === 'Processing'"
+                    [class.badge-warning]="o.status === 'Dispatched'"
+                    [class.badge-success]="o.status === 'Delivered'">
+                    {{ o.status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn-invoice" (click)="viewInvoice(o)" title="View & Download PDF Invoice">
+                    <span class="material-icons-outlined">file_download</span> PDF
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- 3. CUSTOMER WARRANTY ACTIVATION TAB -->
+    @if (activeTab === 'activation') {
+      <div class="dist-card activation-card animate-fade-in">
+        <div class="activation-header">
+          <span class="material-icons-outlined act-icon">verified</span>
+          <div>
+            <h2>Register Customer Purchase & Activate Warranty</h2>
+            <p>Assign serial numbers to end customers at point of sale to initiate 1-year coverage.</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="activateWarranty()" class="activation-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Serial Number (on Unit Box) *</label>
+              <input type="text" [(ngModel)]="activationData.serialNumber" name="sn" placeholder="e.g. MWC-12345" required />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Full Name *</label>
+              <input type="text" [(ngModel)]="activationData.customerName" name="cn" placeholder="Customer Name" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Customer Phone Number *</label>
+              <input type="tel" [(ngModel)]="activationData.customerPhone" name="cp" placeholder="+91 9876543210" required />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Email Address</label>
+              <input type="email" [(ngModel)]="activationData.customerEmail" name="ce" placeholder="customer@example.com" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Installation / Sale Date</label>
+            <input type="date" [(ngModel)]="activationData.installationDate" name="id" />
+          </div>
+
+          <button type="submit" class="btn-activate-submit">
+            <span class="material-icons-outlined">task_alt</span> Activate Warranty Now
+          </button>
+        </form>
+      </div>
+    }
+
+    <!-- 4. ANALYTICS TAB -->
+    @if (activeTab === 'analytics') {
+      <div class="analytics-grid animate-fade-in">
+        <div class="dist-card">
+          <h3>Quarterly Distribution Target</h3>
+          <div class="target-progress-area">
+            <div class="target-stats">
+              <span>Achieved: 180 Units</span>
+              <span>Target: 250 Units (72%)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 72%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dist-card">
+          <h3>Top Distributed Purifier Models</h3>
+          <ul class="top-models-list">
+            <li>
+              <span>1. MWC AquaPure 500 (RO)</span>
+              <strong>78 Units Sold</strong>
+            </li>
+            <li>
+              <span>2. MWC CrystalClear 300 (UV)</span>
+              <strong>45 Units Sold</strong>
+            </li>
+            <li>
+              <span>3. MWC ProClean 700 (RO+UV)</span>
+              <strong>32 Units Sold</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ORDER CONFIRMATION MODAL -->
+  @if (showOrderModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Confirm Bulk Wholesale Order</h3>
+          <button (click)="showOrderModal = false" class="close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p>You are placing a bulk wholesale order for <strong>{{ totalCartItems }} units</strong>.</p>
+          <div class="modal-total">
+            <span>Total Wholesale Amount:</span>
+            <strong>₹{{ totalCartValue | number }}</strong>
+          </div>
+          <p class="sub-text">Order confirmation and dispatch invoice will be sent to your account manager.</p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="showOrderModal = false">Cancel</button>
+          <button type="button" class="btn-primary" (click)="placeBulkOrder()">Submit Order</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- TAX INVOICE MODAL & PRINT VIEW -->
+  @if (showInvoiceModal && selectedOrderForInvoice) {
+    <div class="modal-overlay">
+      <div class="invoice-modal-card">
+        <!-- Action Toolbar -->
+        <div class="invoice-toolbar print-hide">
+          <span class="invoice-title-tag">TAX INVOICE - MWC SYSTEM</span>
+          <div class="toolbar-btns">
+            <button class="btn-print" (click)="printInvoice()">
+              <span class="material-icons-outlined">print</span> Print / Save as PDF
+            </button>
+            <button class="btn-close-inv" (click)="showInvoiceModal = false">&times;</button>
+          </div>
+        </div>
+
+        <!-- Printable Document Body -->
+        <div class="invoice-paper" id="printable-invoice">
+          <!-- Company Header -->
+          <div class="invoice-header-row">
+            <div class="inv-brand">
+              <div class="inv-logo">
+                <span class="material-icons-outlined">water_drop</span>
+              </div>
+              <div>
+                <h2>MWC SYSTEM</h2>
+                <p>Mineral & Water Clean Technology Ltd.</p>
+                <p class="inv-sub">GSTIN: 27AAACM9988C1Z2 | ISO 9001:2015 Certified</p>
+              </div>
+            </div>
+
+            <div class="inv-meta">
+              <h1 class="inv-doc-title">TAX INVOICE</h1>
+              <p><strong>Invoice No:</strong> INV-{{ selectedOrderForInvoice.orderId }}</p>
+              <p><strong>Invoice Date:</strong> {{ selectedOrderForInvoice.date }}</p>
+              <p><strong>Tracking No:</strong> {{ selectedOrderForInvoice.trackingNumber }}</p>
+            </div>
+          </div>
+
+          <div class="inv-divider"></div>
+
+          <!-- Billing Info Grid -->
+          <div class="inv-billing-grid">
+            <div class="inv-bill-box">
+              <h4>Billed To (Distributor):</h4>
+              <p class="bold">{{ distributorInfo.name }}</p>
+              <p>Partner Code: {{ distributorInfo.code }} ({{ distributorInfo.tier }})</p>
+              <p>{{ distributorInfo.address }}</p>
+              <p><strong>GSTIN:</strong> {{ distributorInfo.gstin }}</p>
+            </div>
+
+            <div class="inv-bill-box">
+              <h4>Dispatched From:</h4>
+              <p class="bold">MWC Central Warehouse & Logistics</p>
+              <p>Plot 108, Logistics Park, Bhiwandi, Thane 421302</p>
+              <p><strong>Status:</strong> <span class="badge badge-success">{{ selectedOrderForInvoice.status }}</span></p>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <table class="inv-items-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item Description</th>
+                <th>HSN Code</th>
+                <th>Qty</th>
+                <th>Wholesale Rate</th>
+                <th>Taxable Amount</th>
+                <th>GST (18%)</th>
+                <th>Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>MWC AquaPure 500 (RO Water Purifier)</td>
+                <td>84212190</td>
+                <td>{{ Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) }}</td>
+                <td>₹9,749.00</td>
+                <td>₹{{ ((Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) * 9749) / 1.18) | number:'1.2-2' }}</td>
+                <td>18%</td>
+                <td>₹{{ (Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) * 9749) | number }}</td>
+              </tr>
+              @if (selectedOrderForInvoice.itemsCount > 2) {
+                <tr>
+                  <td>2</td>
+                  <td>MWC CrystalClear 300 (UV Water Purifier)</td>
+                  <td>84212190</td>
+                  <td>{{ selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) }}</td>
+                  <td>₹6,374.00</td>
+                  <td>₹{{ (((selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6))) * 6374) / 1.18) | number:'1.2-2' }}</td>
+                  <td>18%</td>
+                  <td>₹{{ ((selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6))) * 6374) | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- Invoice Summary & Totals -->
+          <div class="inv-total-section">
+            <div class="inv-terms">
+              <p><strong>Terms & Conditions:</strong></p>
+              <ol>
+                <li>Goods once sold are covered under MWC Distributor Warranty terms.</li>
+                <li>All disputes subject to Mumbai Jurisdiction.</li>
+                <li>This is a computer-generated Tax Invoice.</li>
+              </ol>
+            </div>
+
+            <div class="inv-amounts">
+              <div class="amount-row">
+                <span>Sub Total:</span>
+                <span>₹{{ (selectedOrderForInvoice.totalAmount / 1.18) | number:'1.2-2' }}</span>
+              </div>
+              <div class="amount-row">
+                <span>CGST (9%):</span>
+                <span>₹{{ ((selectedOrderForInvoice.totalAmount - (selectedOrderForInvoice.totalAmount / 1.18)) / 2) | number:'1.2-2' }}</span>
+              </div>
+              <div class="amount-row">
+                <span>SGST (9%):</span>
+                <span>₹{{ ((selectedOrderForInvoice.totalAmount - (selectedOrderForInvoice.totalAmount / 1.18)) / 2) | number:'1.2-2' }}</span>
+              </div>
+              <div class="amount-row grand-total">
+                <span>Grand Total:</span>
+                <span>₹{{ selectedOrderForInvoice.totalAmount | number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Stamp -->
+          <div class="inv-stamp-row">
+            <div>
+              <p>Customer / Representative Signature</p>
+            </div>
+            <div class="text-right">
+              <p>For <strong>MWC SYSTEM PVT LTD</strong></p>
+              <div class="stamp-box">AUTHORISED SIGNATORY</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>

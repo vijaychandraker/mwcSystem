@@ -18,6 +18,7 @@ export class HeaderComponent {
     { label: 'Warranty Check', path: '/warranty-check' },
     { label: 'Service', path: '/service' },
     { label: 'Contact Us', path: '/contact' },
+    { label: 'Distributor Portal', path: '/distributor' },
     { label: 'Admin Portal', path: '/admin' }
   ];
 

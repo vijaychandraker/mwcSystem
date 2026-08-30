@@ -6,6 +6,7 @@ import { WarrantyCheckComponent } from './pages/warranty-check/warranty-check.co
 import { ServiceComponent } from './pages/service/service.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { AdminComponent } from './pages/admin/admin.component';
+import { DistributorComponent } from './pages/distributor/distributor.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,5 +16,6 @@ export const routes: Routes = [
   { path: 'service', component: ServiceComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'admin', component: AdminComponent },
+  { path: 'distributor', component: DistributorComponent },
   { path: '**', redirectTo: '' }
 ];
