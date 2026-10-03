@@ -1,465 +1,459 @@
 <section class="distributor-page">
   <!-- Top Banner -->
   <div class="distributor-header">
-    <div class="header-container">
-      <div class="partner-info-bar">
-        <div class="partner-badge">
-          <span class="material-icons-outlined partner-icon">storefront</span>
-          <div>
-            <h1>{{ distributorInfo.name }}</h1>
-            <p><span class="badge-code">{{ distributorInfo.code }}</span> | {{ distributorInfo.region }}</p>
-          </div>
+    <div class="distributor-header-container">
+      <div class="partner-info-box">
+        <span class="material-icons-outlined partner-icon">storefront</span>
+        <div>
+          <h1>{{ currentDistributor.party_name }}</h1>
+          <p>
+            <span>GSTIN: <code>{{ currentDistributor.gst_no }}</code></span> |
+            <span>District (Zila): <strong>{{ currentDistributor.district }}</strong></span> |
+            <span>Contact: {{ currentDistributor.contact_person }} ({{ currentDistributor.mobile }})</span>
+          </p>
         </div>
+      </div>
 
-        <div class="tier-tag">
-          <span class="material-icons-outlined">military_tech</span>
-          {{ distributorInfo.tier }}
+      <!-- Distributor Header Actions -->
+      <div class="distributor-header-actions">
+        <!-- Switcher ONLY for Super Admin inspecting dealers (hidden for self logged-in distributors) -->
+        @if (authService.isLoggedIn() && !authService.isDistributorLoggedIn()) {
+          <div class="distributor-switcher admin-mode-switcher">
+            <span class="material-icons-outlined admin-mode-icon">admin_panel_settings</span>
+            <label for="distributor-select">Admin View:</label>
+            <select
+              id="distributor-select"
+              [(ngModel)]="selectedDistributorId"
+              (change)="onDistributorChange()"
+              class="distributor-dropdown"
+            >
+              @for (d of distributors; track d.party_id) {
+                <option [value]="d.party_id">{{ d.party_name }} ({{ d.district }})</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Distributor Pill & Logout -->
+        <div class="distributor-user-pill">
+          <div class="dist-avatar">
+            <span class="material-icons-outlined">storefront</span>
+          </div>
+          <div class="dist-meta">
+            <span class="dist-name">{{ currentDistributor.party_name }}</span>
+            <span class="dist-role">
+              {{ isSelfDistributor ? 'Logged-in Dealer Account' : 'Authorized Dealer' }} &bull; {{ currentDistributor.district }}
+            </span>
+          </div>
+          <button (click)="promptLogout()" class="btn-dist-logout" title="Sign out of Dealer Account">
+            <span class="material-icons-outlined">logout</span>
+            <span>Logout</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <div class="distributor-container">
-    <!-- Success Banner Notification -->
-    @if (orderSuccessMessage) {
-      <div class="alert-success animate-fade-in">
-        <span class="material-icons-outlined">check_circle</span>
-        <span>{{ orderSuccessMessage }}</span>
+    <!-- Quick Search & Stats Bar -->
+    <div class="distributor-action-bar">
+      <!-- Search -->
+      <div class="distributor-search">
+        <span class="material-icons-outlined">search</span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by serial number, model, invoice, or customer..."
+        />
+        @if (searchQuery) {
+          <button (click)="searchQuery = ''" class="clear-btn">&times;</button>
+        }
       </div>
-    }
+
+      <!-- Quick Metrics -->
+      <div class="distributor-quick-stats">
+        <div class="stat-pill green">
+          <span class="material-icons-outlined">devices</span>
+          <span>Registered Products: <strong>{{ registeredList.length }} Units</strong></span>
+        </div>
+        <div class="stat-pill purple">
+          <span class="material-icons-outlined">verified</span>
+          <span>Active Warranties: <strong>{{ registeredList.length }} Units</strong></span>
+        </div>
+      </div>
+    </div>
 
     <!-- Tabs Navigation -->
     <div class="distributor-tabs">
       <button
-        class="tab-btn"
-        [class.active]="activeTab === 'catalog'"
-        (click)="activeTab = 'catalog'">
-        <span class="material-icons-outlined">shopping_bag</span>
-        Wholesale Order Catalog
-      </button>
-
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'orders'"
-        (click)="activeTab = 'orders'">
-        <span class="material-icons-outlined">local_shipping</span>
-        My Orders ({{ orders.length }})
-      </button>
-
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'activation'"
-        (click)="activeTab = 'activation'">
-        <span class="material-icons-outlined">how_to_reg</span>
-        Customer Warranty Activation
-      </button>
-
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'analytics'"
-        (click)="activeTab = 'analytics'">
-        <span class="material-icons-outlined">analytics</span>
-        Territory Performance
+        class="tab-btn active"
+        (click)="activeTab = 'registered'">
+        <span class="material-icons-outlined">fact_check</span>
+        Registered Products & Warranties ({{ registeredList.length }})
       </button>
     </div>
 
-    <!-- 1. WHOLESALE CATALOG TAB -->
-    @if (activeTab === 'catalog') {
-      <div class="catalog-layout animate-fade-in">
-        <!-- Products Grid -->
-        <div class="products-list">
-          <div class="section-title">
-            <h2>Distributor Wholesale Pricing</h2>
-            <p>Select unit quantities for bulk order placement</p>
+    <!-- 1. REGISTERED PRODUCTS & WARRANTIES TAB -->
+    @if (activeTab === 'registered') {
+      <div class="sold-section animate-fade-in">
+        <div class="section-header" style="margin-bottom: 20px;">
+          <div>
+            <h2>Registered Products & Official Warranty Registry</h2>
+            <p>Active warranties registered under {{ currentDistributor.party_name }}.</p>
           </div>
+        </div>
 
-          <div class="wholesale-grid">
-            @for (p of products; track p.id) {
-              <div class="wholesale-card">
-                <div class="wholesale-header">
-                  <code>{{ p.code }}</code>
-                  <span class="stock-tag">In Stock: {{ p.stockAvailable }} units</span>
-                </div>
-                <h3>{{ p.name }}</h3>
-                <span class="category-text">{{ p.category }}</span>
-
-                <div class="price-breakdown">
-                  <div class="price-item">
-                    <span class="price-label">Retail Price</span>
-                    <span class="price-value strike">₹{{ p.retailPrice | number }}</span>
-                  </div>
-                  <div class="price-item highlight">
-                    <span class="price-label">Wholesale Price</span>
-                    <span class="price-value">₹{{ p.wholesalePrice | number }}</span>
-                  </div>
-                </div>
-
-                <!-- Quantity Selector -->
-                <div class="qty-selector">
-                  <span class="qty-label">Order Units:</span>
-                  <div class="qty-controls">
-                    <button (click)="updateQty(p, -5)" class="btn-qty">-5</button>
-                    <button (click)="updateQty(p, -1)" class="btn-qty">-1</button>
-                    <input type="number" [(ngModel)]="p.orderQty" class="qty-input" min="0" />
-                    <button (click)="updateQty(p, 1)" class="btn-qty">+1</button>
-                    <button (click)="updateQty(p, 5)" class="btn-qty">+5</button>
-                  </div>
-                </div>
-
-                @if (p.orderQty > 0) {
-                  <div class="item-subtotal">
-                    Subtotal: <strong>₹{{ (p.orderQty * p.wholesalePrice) | number }}</strong>
-                  </div>
+        @if (registeredList.length === 0) {
+          <div class="empty-state">
+            <span class="material-icons-outlined empty-icon">fact_check</span>
+            <h3>No Registered Units Found</h3>
+            <p>No products registered for {{ currentDistributor.party_name }}, or check your search filter.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="sold-table">
+              <thead>
+                <tr>
+                  <th>External Bill / Ref No</th>
+                  <th>Sale / Reg Date</th>
+                  <th>Customer / End User</th>
+                  <th>District (Zila)</th>
+                  <th>Product & Model</th>
+                  <th>Serial Number</th>
+                  <th>Specifications</th>
+                  <th>Warranty Term</th>
+                  <th>Warranty Valid Till</th>
+                  <th>Warranty Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of pagedRegisteredList; track item.unit_id) {
+                  <tr>
+                    <td>
+                      @if (item.sale_info?.invoice_no && item.sale_info?.invoice_no !== 'N/A') {
+                        <code class="inv-code" title="Permanent Record: Invoice & Sale Date cannot be modified" style="display:inline-flex; align-items:center; gap:3px;">
+                          <span class="material-icons-outlined" style="font-size:12px; color:#475569;">lock</span>
+                          {{ item.sale_info?.invoice_no }}
+                        </code>
+                      } @else {
+                        <span class="text-muted" style="font-size: 11px; font-style: italic;">Pending Sale</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.sale_info?.invoice_date) {
+                        <strong>{{ item.sale_info?.invoice_date }}</strong>
+                      } @else {
+                        <span class="text-muted" style="font-size: 11px;">Not Sold Yet</span>
+                      }
+                    </td>
+                    <td><strong>{{ item.sale_info?.customer_name || 'Awaiting Customer' }}</strong></td>
+                    <td><span class="zila-tag">{{ item.sale_info?.zila || currentDistributor.district }}</span></td>
+                    <td>
+                      <div><strong>{{ item.product_name }}</strong></div>
+                      <small class="text-muted">{{ item.model_no }}</small>
+                    </td>
+                    <td><code class="serial-code">{{ item.serial_no }}</code></td>
+                    <td style="font-size: 11px; max-width: 220px; line-height: 1.4;">
+                      @if (item.category_id === 1) {
+                        <span>CPU: {{ item.specs.processor }} | RAM: {{ item.specs.ram_size }} | SSD: {{ item.specs.ssd_size }}</span>
+                      } @else if (item.category_id === 2 || item.category_id === 3) {
+                        <span>Size: {{ item.specs.screen_size }}</span>
+                      } @else if (item.category_id === 4) {
+                        <span>RAM/ROM: {{ item.specs.ram }}/{{ item.specs.rom }}</span>
+                      } @else if (item.category_id === 5) {
+                        <span>{{ item.specs.watt }} - {{ item.specs.color }}</span>
+                      }
+                    </td>
+                    <td>{{ item.warranty_months }} Months</td>
+                    <td>
+                      @if (item.sale_info?.warranty_end) {
+                        <strong class="text-green-dark">{{ item.sale_info?.warranty_end }}</strong>
+                      } @else {
+                        <span style="color: #d97706; font-size: 11px;">Starts from Sale Date</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.sale_info?.invoice_no && item.sale_info?.invoice_no !== 'N/A' && item.sale_info?.invoice_date) {
+                        <span class="status-pill active-pill">
+                          <span class="material-icons-outlined">check_circle</span>
+                          Active
+                        </span>
+                      } @else {
+                        <span class="status-pill" style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:3px;">
+                          <span class="material-icons-outlined" style="font-size:13px;">schedule</span>
+                          Pending Sale
+                        </span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.sale_info?.invoice_no && item.sale_info?.invoice_no !== 'N/A' && item.sale_info?.invoice_date) {
+                        <button class="btn-action-sm" (click)="openRegisterModal(item)" title="View Customer / Warranty Details" style="padding: 6px 12px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                          <span class="material-icons-outlined" style="font-size: 14px;">visibility</span>
+                          Details
+                        </button>
+                      } @else {
+                        <button class="btn-primary" (click)="openRegisterModal(item)" title="Enter Invoice & Sale Date to Start Warranty" style="padding: 6px 12px; font-size: 11px; border-radius: 6px; background: #2563eb; color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                          <span class="material-icons-outlined" style="font-size: 13px;">point_of_sale</span>
+                          Activate
+                        </button>
+                      }
+                    </td>
+                  </tr>
                 }
-              </div>
-            }
+              </tbody>
+            </table>
           </div>
-        </div>
 
-        <!-- Sticky Cart Summary Panel -->
-        <div class="cart-summary-panel">
-          <div class="summary-card">
-            <h3><span class="material-icons-outlined">shopping_cart</span> Bulk Order Summary</h3>
-            <div class="summary-divider"></div>
-
-            <div class="summary-row">
-              <span>Total Selected Units</span>
-              <strong>{{ totalCartItems }} units</strong>
-            </div>
-
-            <div class="summary-row">
-              <span>Wholesale Subtotal</span>
-              <strong>₹{{ totalCartValue | number }}</strong>
-            </div>
-
-            <div class="summary-row green">
-              <span>Distributor Margin Saved</span>
-              <strong>₹{{ totalCartSavings | number }}</strong>
-            </div>
-
-            <div class="summary-divider"></div>
-
-            <button
-              class="btn-place-order"
-              [disabled]="totalCartItems === 0"
-              (click)="showOrderModal = true">
-              <span class="material-icons-outlined">bolt</span>
-              Proceed Wholesale Checkout
-            </button>
-
-            <!-- Manager Card -->
-            <div class="manager-card">
-              <span class="material-icons-outlined manager-icon">support_agent</span>
-              <div>
-                <span class="mgr-title">Regional Account Manager</span>
-                <span class="mgr-name">{{ distributorInfo.manager }}</span>
+          <!-- Distributor Pagination Bar -->
+          <div class="pagination-bar">
+            <div class="pagination-info">
+              <span>
+                Showing <strong>{{ registeredList.length ? (distPage - 1) * distPageSize + 1 : 0 }}</strong>
+                to <strong>{{ Math.min(distPage * distPageSize, registeredList.length) }}</strong>
+                of <strong>{{ registeredList.length }}</strong> products
+              </span>
+              <div class="page-size-selector">
+                <label>Per page:</label>
+                <select [(ngModel)]="distPageSize" (change)="distPage = 1" class="page-size-select">
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="20">20</option>
+                  <option [value]="50">50</option>
+                </select>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- 2. MY ORDERS TAB -->
-    @if (activeTab === 'orders') {
-      <div class="dist-card animate-fade-in">
-        <div class="card-header">
-          <div>
-            <h2>Distributor Order History</h2>
-            <p>Track wholesale shipments and view invoices</p>
-          </div>
-        </div>
-
-        <table class="dist-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Order Date</th>
-              <th>Units Count</th>
-              <th>Total Amount</th>
-              <th>Tracking Number</th>
-              <th>Shipment Status</th>
-              <th>Invoice</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (o of orders; track o.orderId) {
-              <tr>
-                <td><code>{{ o.orderId }}</code></td>
-                <td>{{ o.date }}</td>
-                <td>{{ o.itemsCount }} units</td>
-                <td class="font-bold">₹{{ o.totalAmount | number }}</td>
-                <td><code class="tracking-code">{{ o.trackingNumber }}</code></td>
-                <td>
-                  <span class="badge"
-                    [class.badge-primary]="o.status === 'Processing'"
-                    [class.badge-warning]="o.status === 'Dispatched'"
-                    [class.badge-success]="o.status === 'Delivered'">
-                    {{ o.status }}
-                  </span>
-                </td>
-                <td>
-                  <button class="btn-invoice" (click)="viewInvoice(o)" title="View & Download PDF Invoice">
-                    <span class="material-icons-outlined">file_download</span> PDF
+            @if (distTotalPages > 1) {
+              <div class="pagination-controls">
+                <button class="btn-page-nav" [disabled]="distPage === 1" (click)="setDistPage(1)" title="First Page">
+                  <span class="material-icons-outlined">first_page</span>
+                </button>
+                <button class="btn-page-nav" [disabled]="distPage === 1" (click)="setDistPage(distPage - 1)" title="Previous Page">
+                  <span class="material-icons-outlined">chevron_left</span>
+                </button>
+                @for (p of distPagesArray; track p) {
+                  <button class="btn-page-num" [class.active]="p === distPage" (click)="setDistPage(p)">
+                    {{ p }}
                   </button>
-                </td>
-              </tr>
+                }
+                <button class="btn-page-nav" [disabled]="distPage === distTotalPages" (click)="setDistPage(distPage + 1)" title="Next Page">
+                  <span class="material-icons-outlined">chevron_right</span>
+                </button>
+                <button class="btn-page-nav" [disabled]="distPage === distTotalPages" (click)="setDistPage(distTotalPages)" title="Last Page">
+                  <span class="material-icons-outlined">last_page</span>
+                </button>
+              </div>
             }
-          </tbody>
-        </table>
-      </div>
-    }
-
-    <!-- 3. CUSTOMER WARRANTY ACTIVATION TAB -->
-    @if (activeTab === 'activation') {
-      <div class="dist-card activation-card animate-fade-in">
-        <div class="activation-header">
-          <span class="material-icons-outlined act-icon">verified</span>
-          <div>
-            <h2>Register Customer Purchase & Activate Warranty</h2>
-            <p>Assign serial numbers to end customers at point of sale to initiate 1-year coverage.</p>
           </div>
-        </div>
-
-        <form (ngSubmit)="activateWarranty()" class="activation-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Serial Number (on Unit Box) *</label>
-              <input type="text" [(ngModel)]="activationData.serialNumber" name="sn" placeholder="e.g. MWC-12345" required />
-            </div>
-
-            <div class="form-group">
-              <label>Customer Full Name *</label>
-              <input type="text" [(ngModel)]="activationData.customerName" name="cn" placeholder="Customer Name" required />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Customer Phone Number *</label>
-              <input type="tel" [(ngModel)]="activationData.customerPhone" name="cp" placeholder="+91 9876543210" required />
-            </div>
-
-            <div class="form-group">
-              <label>Customer Email Address</label>
-              <input type="email" [(ngModel)]="activationData.customerEmail" name="ce" placeholder="customer@example.com" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Installation / Sale Date</label>
-            <input type="date" [(ngModel)]="activationData.installationDate" name="id" />
-          </div>
-
-          <button type="submit" class="btn-activate-submit">
-            <span class="material-icons-outlined">task_alt</span> Activate Warranty Now
-          </button>
-        </form>
-      </div>
-    }
-
-    <!-- 4. ANALYTICS TAB -->
-    @if (activeTab === 'analytics') {
-      <div class="analytics-grid animate-fade-in">
-        <div class="dist-card">
-          <h3>Quarterly Distribution Target</h3>
-          <div class="target-progress-area">
-            <div class="target-stats">
-              <span>Achieved: 180 Units</span>
-              <span>Target: 250 Units (72%)</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" style="width: 72%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="dist-card">
-          <h3>Top Distributed Purifier Models</h3>
-          <ul class="top-models-list">
-            <li>
-              <span>1. MWC AquaPure 500 (RO)</span>
-              <strong>78 Units Sold</strong>
-            </li>
-            <li>
-              <span>2. MWC CrystalClear 300 (UV)</span>
-              <strong>45 Units Sold</strong>
-            </li>
-            <li>
-              <span>3. MWC ProClean 700 (RO+UV)</span>
-              <strong>32 Units Sold</strong>
-            </li>
-          </ul>
-        </div>
+        }
       </div>
     }
   </div>
 
-  <!-- ORDER CONFIRMATION MODAL -->
-  @if (showOrderModal) {
-    <div class="modal-overlay">
-      <div class="modal-card">
+  <!-- ==================================================== -->
+  <!-- MODAL: DISTRIBUTOR PRODUCT SALE & INVOICE ENTRY -->
+  <!-- ==================================================== -->
+  @if (showSaleModal && selectedUnitForSale) {
+    <div class="modal-overlay" (click)="closeSaleModal()">
+      <div class="modal-card sale-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>Confirm Bulk Wholesale Order</h3>
-          <button (click)="showOrderModal = false" class="close-btn">&times;</button>
-        </div>
-
-        <div class="modal-body">
-          <p>You are placing a bulk wholesale order for <strong>{{ totalCartItems }} units</strong>.</p>
-          <div class="modal-total">
-            <span>Total Wholesale Amount:</span>
-            <strong>₹{{ totalCartValue | number }}</strong>
+          <div class="sale-modal-title">
+            <span class="material-icons-outlined modal-sale-icon" [style.background]="isUnitAlreadySold ? '#475569' : ''">
+              {{ isUnitAlreadySold ? 'lock' : 'point_of_sale' }}
+            </span>
+            <div>
+              <h3>{{ isUnitAlreadySold ? 'Sold Product Details (Locked)' : 'Customer Sale & Warranty Activation' }}</h3>
+              <p>{{ isUnitAlreadySold ? 'Invoice Number and Sale Date are permanent and cannot be edited.' : 'Warranty begins from the Sale Date and calculates validity for ' + selectedUnitForSale.warranty_months + ' months.' }}</p>
+            </div>
           </div>
-          <p class="sub-text">Order confirmation and dispatch invoice will be sent to your account manager.</p>
+          <button (click)="closeSaleModal()" class="close-btn">&times;</button>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" (click)="showOrderModal = false">Cancel</button>
-          <button type="button" class="btn-primary" (click)="placeBulkOrder()">Submit Order</button>
-        </div>
+        @if (isUnitAlreadySold) {
+          <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-left: 4px solid #475569; padding: 12px 16px; border-radius: 8px; margin: 16px 20px 0; display: flex; align-items: center; gap: 10px;">
+            <span class="material-icons-outlined" style="color: #475569; font-size: 22px;">lock</span>
+            <div style="font-size: 13px; color: #1e293b; line-height: 1.4;">
+              <strong>Permanent Record:</strong> Once entered, Invoice Number and Sale Date <strong>cannot be edited</strong>. This ensures warranty verification and certificate integrity.
+            </div>
+          </div>
+        }
+
+        <!-- Success/Error Banners -->
+        @if (saleSuccessMessage) {
+          <div class="sale-alert-success">
+            <span class="material-icons-outlined">check_circle</span>
+            {{ saleSuccessMessage }}
+          </div>
+        }
+        @if (saleErrorMessage) {
+          <div class="sale-alert-error">
+            <span class="material-icons-outlined">error</span>
+            {{ saleErrorMessage }}
+          </div>
+        }
+
+        <form (ngSubmit)="submitSale()" class="sale-form-body">
+          <!-- Selected Product Summary Box -->
+          <div class="unit-summary-box">
+            <div class="summary-top">
+              <span class="cat-pill cat-{{ selectedUnitForSale.category_id }}">{{ selectedUnitForSale.category_name }}</span>
+              <span class="summary-warr">{{ selectedUnitForSale.warranty_months }} Months Official Warranty</span>
+            </div>
+            <h4>{{ selectedUnitForSale.product_name }}</h4>
+            <div class="summary-details">
+              <span>Model: <strong>{{ selectedUnitForSale.model_no }}</strong></span>
+              <span>Serial No: <strong class="text-blue">{{ selectedUnitForSale.serial_no }}</strong></span>
+              <span>Authorized Dealer: <strong>{{ currentDistributor.party_name }}</strong></span>
+            </div>
+          </div>
+
+          <!-- Invoice Details Inputs -->
+          <div class="form-inputs-group">
+            <div class="form-group">
+              <label>
+                Customer Invoice Number *
+                @if (isUnitAlreadySold) {
+                  <span style="color:#64748b; font-size:11px; font-weight:700; margin-left:6px;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">lock</span> Locked</span>
+                }
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="saleFormData.invoice_no"
+                name="saleInvoiceNo"
+                placeholder="e.g. INV-2026-0842 (Required)"
+                required
+                [disabled]="isUnitAlreadySold"
+                [class.disabled-input]="isUnitAlreadySold"
+                class="highlight-invoice-input"
+              />
+              <small class="input-hint">{{ isUnitAlreadySold ? 'Invoice number is permanent.' : 'Warranty can only begin with a valid invoice number.' }}</small>
+            </div>
+
+            <div class="form-group">
+              <label>
+                Sale Date (Warranty Start Date) *
+                @if (isUnitAlreadySold) {
+                  <span style="color:#64748b; font-size:11px; font-weight:700; margin-left:6px;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">lock</span> Locked</span>
+                }
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="saleFormData.invoice_date"
+                name="saleInvoiceDate"
+                required
+                [disabled]="isUnitAlreadySold"
+                [class.disabled-input]="isUnitAlreadySold"
+                class="highlight-date-input"
+              />
+              <small class="input-hint">{{ isUnitAlreadySold ? 'Warranty start date cannot be changed.' : 'Official warranty is calculated directly from this sale date.' }}</small>
+            </div>
+
+            <div class="form-group">
+              <label>
+                End User / Customer Name *
+                @if (isUnitAlreadySold) {
+                  <span style="color:#64748b; font-size:11px; font-weight:700; margin-left:6px;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">lock</span> Locked</span>
+                }
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="saleFormData.customer_name"
+                name="saleCustName"
+                placeholder="e.g. AC TRIBLE DIPARTMENT"
+                required
+                [disabled]="isUnitAlreadySold"
+                [class.disabled-input]="isUnitAlreadySold"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>
+                District (Zila) *
+                @if (isUnitAlreadySold) {
+                  <span style="color:#64748b; font-size:11px; font-weight:700; margin-left:6px;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">lock</span> Locked</span>
+                }
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="saleFormData.zila"
+                name="saleZila"
+                placeholder="BILASPUR"
+                required
+                [disabled]="isUnitAlreadySold"
+                [class.disabled-input]="isUnitAlreadySold"
+              />
+            </div>
+          </div>
+
+          <!-- Warranty Calculation Preview -->
+          <div class="warranty-preview-banner">
+            <span class="material-icons-outlined icon-shield">verified</span>
+            <div>
+              <strong>Warranty Starts on Sale Date: {{ saleFormData.invoice_date || 'Selected Date' }}</strong>
+              <p>Coverage: <strong>{{ selectedUnitForSale.warranty_months }} Months</strong>. Calculated strictly from Sale Date.</p>
+            </div>
+          </div>
+
+          <div class="modal-actions-bar">
+            @if (isUnitAlreadySold) {
+              <button type="button" class="btn-primary" (click)="closeSaleModal()" style="width: 100%; justify-content: center; padding: 10px 20px;">
+                <span class="material-icons-outlined">check</span>
+                Close
+              </button>
+            } @else {
+              <button type="button" class="btn-cancel" (click)="closeSaleModal()" [disabled]="isSubmittingSale">Cancel</button>
+              <button type="submit" class="btn-confirm-sale" [disabled]="isSubmittingSale">
+                @if (isSubmittingSale) {
+                  <span class="spinner"></span> Activating...
+                } @else {
+                  <span class="material-icons-outlined">verified</span>
+                  Activate Warranty from Sale Date
+                }
+              </button>
+            }
+          </div>
+        </form>
       </div>
     </div>
   }
 
-  <!-- TAX INVOICE MODAL & PRINT VIEW -->
-  @if (showInvoiceModal && selectedOrderForInvoice) {
-    <div class="modal-overlay">
-      <div class="invoice-modal-card">
-        <!-- Action Toolbar -->
-        <div class="invoice-toolbar print-hide">
-          <span class="invoice-title-tag">TAX INVOICE - MWC SYSTEM</span>
-          <div class="toolbar-btns">
-            <button class="btn-print" (click)="printInvoice()">
-              <span class="material-icons-outlined">print</span> Print / Save as PDF
-            </button>
-            <button class="btn-close-inv" (click)="showInvoiceModal = false">&times;</button>
+  <!-- MODAL: DISTRIBUTOR LOGOUT CONFIRMATION -->
+  @if (showLogoutConfirmModal) {
+    <div class="modal-overlay logout-modal-overlay" (click)="cancelLogout()">
+      <div class="modal-card logout-confirm-card" (click)="$event.stopPropagation()">
+        <div class="logout-confirm-header">
+          <div class="logout-icon-glow">
+            <span class="material-icons-outlined">logout</span>
+          </div>
+          <h3>Confirm Distributor Sign Out</h3>
+          <p>Are you sure you want to log out from this dealer session?</p>
+        </div>
+
+        <div class="logout-user-box">
+          <div class="logout-user-avatar">
+            <span class="material-icons-outlined">storefront</span>
+          </div>
+          <div class="logout-user-details">
+            <div class="logout-user-title">{{ authService.currentDistributor()?.party_name || currentDistributor.party_name }}</div>
+            <div class="logout-user-sub">
+              GSTIN: {{ authService.currentDistributor()?.gst_no || currentDistributor.gst_no }} &bull; {{ currentDistributor.district }}
+            </div>
           </div>
         </div>
 
-        <!-- Printable Document Body -->
-        <div class="invoice-paper" id="printable-invoice">
-          <!-- Company Header -->
-          <div class="invoice-header-row">
-            <div class="inv-brand">
-              <div class="inv-logo">
-                <span class="material-icons-outlined">water_drop</span>
-              </div>
-              <div>
-                <h2>MWC SYSTEM</h2>
-                <p>Mineral & Water Clean Technology Ltd.</p>
-                <p class="inv-sub">GSTIN: 27AAACM9988C1Z2 | ISO 9001:2015 Certified</p>
-              </div>
-            </div>
+        <div class="logout-warning-notice">
+          <span class="material-icons-outlined">info</span>
+          <span>You will need to sign in again with your mobile number or GSTIN to process future sales.</span>
+        </div>
 
-            <div class="inv-meta">
-              <h1 class="inv-doc-title">TAX INVOICE</h1>
-              <p><strong>Invoice No:</strong> INV-{{ selectedOrderForInvoice.orderId }}</p>
-              <p><strong>Invoice Date:</strong> {{ selectedOrderForInvoice.date }}</p>
-              <p><strong>Tracking No:</strong> {{ selectedOrderForInvoice.trackingNumber }}</p>
-            </div>
-          </div>
-
-          <div class="inv-divider"></div>
-
-          <!-- Billing Info Grid -->
-          <div class="inv-billing-grid">
-            <div class="inv-bill-box">
-              <h4>Billed To (Distributor):</h4>
-              <p class="bold">{{ distributorInfo.name }}</p>
-              <p>Partner Code: {{ distributorInfo.code }} ({{ distributorInfo.tier }})</p>
-              <p>{{ distributorInfo.address }}</p>
-              <p><strong>GSTIN:</strong> {{ distributorInfo.gstin }}</p>
-            </div>
-
-            <div class="inv-bill-box">
-              <h4>Dispatched From:</h4>
-              <p class="bold">MWC Central Warehouse & Logistics</p>
-              <p>Plot 108, Logistics Park, Bhiwandi, Thane 421302</p>
-              <p><strong>Status:</strong> <span class="badge badge-success">{{ selectedOrderForInvoice.status }}</span></p>
-            </div>
-          </div>
-
-          <!-- Items Table -->
-          <table class="inv-items-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Item Description</th>
-                <th>HSN Code</th>
-                <th>Qty</th>
-                <th>Wholesale Rate</th>
-                <th>Taxable Amount</th>
-                <th>GST (18%)</th>
-                <th>Total (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>MWC AquaPure 500 (RO Water Purifier)</td>
-                <td>84212190</td>
-                <td>{{ Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) }}</td>
-                <td>₹9,749.00</td>
-                <td>₹{{ ((Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) * 9749) / 1.18) | number:'1.2-2' }}</td>
-                <td>18%</td>
-                <td>₹{{ (Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) * 9749) | number }}</td>
-              </tr>
-              @if (selectedOrderForInvoice.itemsCount > 2) {
-                <tr>
-                  <td>2</td>
-                  <td>MWC CrystalClear 300 (UV Water Purifier)</td>
-                  <td>84212190</td>
-                  <td>{{ selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6)) }}</td>
-                  <td>₹6,374.00</td>
-                  <td>₹{{ (((selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6))) * 6374) / 1.18) | number:'1.2-2' }}</td>
-                  <td>18%</td>
-                  <td>₹{{ ((selectedOrderForInvoice.itemsCount - Math.max(1, Math.floor(selectedOrderForInvoice.itemsCount * 0.6))) * 6374) | number }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-
-          <!-- Invoice Summary & Totals -->
-          <div class="inv-total-section">
-            <div class="inv-terms">
-              <p><strong>Terms & Conditions:</strong></p>
-              <ol>
-                <li>Goods once sold are covered under MWC Distributor Warranty terms.</li>
-                <li>All disputes subject to Mumbai Jurisdiction.</li>
-                <li>This is a computer-generated Tax Invoice.</li>
-              </ol>
-            </div>
-
-            <div class="inv-amounts">
-              <div class="amount-row">
-                <span>Sub Total:</span>
-                <span>₹{{ (selectedOrderForInvoice.totalAmount / 1.18) | number:'1.2-2' }}</span>
-              </div>
-              <div class="amount-row">
-                <span>CGST (9%):</span>
-                <span>₹{{ ((selectedOrderForInvoice.totalAmount - (selectedOrderForInvoice.totalAmount / 1.18)) / 2) | number:'1.2-2' }}</span>
-              </div>
-              <div class="amount-row">
-                <span>SGST (9%):</span>
-                <span>₹{{ ((selectedOrderForInvoice.totalAmount - (selectedOrderForInvoice.totalAmount / 1.18)) / 2) | number:'1.2-2' }}</span>
-              </div>
-              <div class="amount-row grand-total">
-                <span>Grand Total:</span>
-                <span>₹{{ selectedOrderForInvoice.totalAmount | number }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer Stamp -->
-          <div class="inv-stamp-row">
-            <div>
-              <p>Customer / Representative Signature</p>
-            </div>
-            <div class="text-right">
-              <p>For <strong>MWC SYSTEM PVT LTD</strong></p>
-              <div class="stamp-box">AUTHORISED SIGNATORY</div>
-            </div>
-          </div>
+        <div class="logout-actions-grid">
+          <button type="button" class="btn-cancel-action" (click)="cancelLogout()">
+            Cancel / Stay in Portal
+          </button>
+          <button type="button" class="btn-danger-logout" (click)="confirmLogout()">
+            <span class="material-icons-outlined">power_settings_new</span>
+            Yes, Log Out
+          </button>
         </div>
       </div>
     </div>

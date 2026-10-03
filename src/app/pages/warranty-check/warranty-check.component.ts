@@ -41,44 +41,33 @@ export class WarrantyCheckComponent {
       error: (err) => {
         this.isSearching = false;
 
-        // Fallback for demonstration if API is offline or returns error
         if (err.status === 404 && err.error?.message) {
           this.warrantyResult = {
             found: false,
             message: err.error.message
           };
-        } else if (serial.startsWith('MASTO')) {
+        } else if (serial === 'INVO-DP500-2026001') {
           this.warrantyResult = {
             found: true,
-            serialNo: serial,
-            productName: 'Masto Water Cooler',
-            category: 'Commercial Water Cooler',
-            customerName: 'Rahul Sharma',
-            customerMobile: '+91 9876543210',
-            installationDate: '2026-08-15',
-            warrantyPeriodMonths: 12,
-            warrantyEndDate: '2027-08-14',
+            serialNo: 'INVO-DP500-2026001',
+            productName: 'INVO DeskPro i5 PC',
+            category: 'Computer',
+            brand: 'INVO',
+            modelNo: 'INVO-DP500',
+            customerName: 'St. Xavier Higher Secondary School',
+            invoiceNo: 'INV-2026-101',
+            invoiceDate: '2026-02-15',
+            sellerName: 'TechNova Solutions Pvt Ltd',
+            warrantyStart: '2026-02-15',
+            warrantyEnd: '2028-02-15',
+            warrantyPeriodMonths: 24,
             status: 'Active',
-            daysRemaining: 364
-          };
-        } else if (serial.startsWith('MWC')) {
-          this.warrantyResult = {
-            found: true,
-            serialNo: serial,
-            productName: 'MWC AquaPure 500',
-            category: 'RO Water Purifier',
-            customerName: 'Rahul Sharma',
-            customerMobile: '+91 9876543210',
-            installationDate: '2026-03-15',
-            warrantyPeriodMonths: 12,
-            warrantyEndDate: '2027-03-15',
-            status: 'Active',
-            daysRemaining: 201
+            daysRemaining: 529
           };
         } else {
           this.warrantyResult = {
             found: false,
-            message: 'No warranty record found for this serial number. Please verify and try again or contact support.'
+            message: 'No warranty record found for this serial number. Please verify and try again.'
           };
         }
       }
@@ -106,4 +95,3 @@ export class WarrantyCheckComponent {
     }, 300);
   }
 }
-

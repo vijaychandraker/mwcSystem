@@ -1,41 +1,51 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-contact',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.css'
 })
 export class ContactComponent {
-  formData = {
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  };
-
-  isSubmitting = false;
-  isSubmitted = false;
-
-  contactInfo = [
-    { icon: 'phone', label: 'Phone', value: '1800-123-4567', link: 'tel:1800-123-4567' },
-    { icon: 'email', label: 'Email', value: 'support@mwcsystem.com', link: 'mailto:support@mwcsystem.com' },
-    { icon: 'location_on', label: 'Address', value: 'Mumbai, Maharashtra, India', link: '#' },
-    { icon: 'schedule', label: 'Working Hours', value: 'Mon - Sat: 9AM - 6PM', link: '#' }
+  emailContacts = [
+    {
+      icon: 'support_agent',
+      label: 'Customer Support',
+      value: 'support@invo.co.in',
+      link: 'mailto:support@invo.co.in',
+      tag: 'Helpdesk & Warranty'
+    },
+    {
+      icon: 'storefront',
+      label: 'Sales & Distribution',
+      value: 'sales@invo.co.in',
+      link: 'mailto:sales@invo.co.in',
+      tag: 'Commercial & Orders'
+    },
+    {
+      icon: 'info',
+      label: 'General Information',
+      value: 'info@invo.co.in',
+      link: 'mailto:info@invo.co.in',
+      tag: 'Inquiries & Info'
+    },
+    {
+      icon: 'badge',
+      label: 'Executive Contact',
+      value: 'rajagrawal@invo.co.in',
+      link: 'mailto:rajagrawal@invo.co.in',
+      tag: 'Direct Line'
+    }
   ];
 
-  submitForm() {
-    if (!this.formData.name || !this.formData.email || !this.formData.message) return;
+  generalInfo = [
+    { icon: 'phone', label: 'Toll-Free Phone', value: '1800-123-4567', link: 'tel:1800-123-4567' },
+    { icon: 'location_on', label: 'Registered Office', value: 'Plot 42, Tech Park, Okhla Phase 3, Delhi / Bilaspur (CG)', link: '#' },
+    { icon: 'schedule', label: 'Working Hours', value: 'Mon - Sat: 9:00 AM - 6:00 PM', link: '#' }
+  ];
 
-    this.isSubmitting = true;
-
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.isSubmitted = true;
-      this.formData = { name: '', email: '', phone: '', subject: '', message: '' };
-    }, 1500);
+  get contactInfo() {
+    return [...this.emailContacts, ...this.generalInfo];
   }
 }

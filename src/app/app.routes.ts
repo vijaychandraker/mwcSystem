@@ -7,6 +7,9 @@ import { ServiceComponent } from './pages/service/service.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { AdminComponent } from './pages/admin/admin.component';
 import { DistributorComponent } from './pages/distributor/distributor.component';
+import { LoginComponent } from './pages/login/login.component';
+import { authGuard } from './guards/auth.guard';
+import { distributorAuthGuard } from './guards/distributor-auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,7 +18,9 @@ export const routes: Routes = [
   { path: 'warranty-check', component: WarrantyCheckComponent },
   { path: 'service', component: ServiceComponent },
   { path: 'contact', component: ContactComponent },
-  { path: 'admin', component: AdminComponent },
-  { path: 'distributor', component: DistributorComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+  { path: 'distributor', component: DistributorComponent, canActivate: [distributorAuthGuard] },
   { path: '**', redirectTo: '' }
 ];
+

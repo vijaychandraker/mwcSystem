@@ -1,7 +1,7 @@
 <section class="page-hero">
   <div class="page-hero-content">
-    <h1>Warranty <span class="highlight">Check Portal</span></h1>
-    <p>Verify your product warranty status instantly with your unique serial number.</p>
+    <h1>INVO IT <span class="highlight">Warranty Portal</span></h1>
+    <p>Verify your product warranty status instantly with your unique product serial number.</p>
   </div>
 </section>
 
@@ -12,7 +12,7 @@
       <div class="search-header">
         <span class="material-icons-outlined search-header-icon">verified_user</span>
         <h2>Check Product Warranty</h2>
-        <p>Enter your product serial number below to view instant status.</p>
+        <p>Enter your INVO IT product serial number below to view instant status and invoice details.</p>
       </div>
 
       <div class="search-form">
@@ -21,7 +21,7 @@
           <input
             type="text"
             [(ngModel)]="serialNumber"
-            placeholder="Enter Serial Number (e.g., MASTO-240815-000123 or MWC-10001)"
+            placeholder="Enter Serial Number (e.g., INVO-DP500-2026001 or INVO-IFP65-2026003)"
             class="warranty-input"
             id="warranty-serial-input"
             (keyup.enter)="checkWarranty()"
@@ -35,7 +35,7 @@
             [disabled]="isSearching || !serialNumber.trim()">
             @if (isSearching) {
               <span class="spinner"></span>
-              Checking...
+              Checking Database...
             } @else {
               <span class="material-icons-outlined">search</span>
               Check Warranty
@@ -50,23 +50,23 @@
         </div>
       </div>
 
-      <!-- Note Callout Banner (Matching Image 2) -->
+      <!-- Note Callout Banner -->
       <div class="note-banner">
         <div class="note-left">
           <span class="material-icons-outlined note-bulb">lightbulb</span>
           <div class="note-text">
-            <strong>NOTE : Each product must have a Unique Serial Number.</strong>
-            <p>It should be printed on product, warranty card and invoice.</p>
+            <strong>NOTE : Each INVO IT product has a Unique Serial Number.</strong>
+            <p>It is printed on the product label, packaging box, and official Tax Invoice.</p>
           </div>
         </div>
         <div class="barcode-badge">
-          <span class="barcode-tag">Serial No. <strong>MASTO-240815-000123</strong></span>
+          <span class="barcode-tag">Sample SN: <strong>INVO-DP500-2026001</strong></span>
           <div class="barcode-lines"></div>
         </div>
       </div>
     </div>
 
-    <!-- Result Cards (Matching Image 1 Mockups) -->
+    <!-- Result Cards -->
     @if (warrantyResult) {
       <div class="warranty-result animate-fade-in-up">
         @if (warrantyResult.found) {
@@ -79,30 +79,125 @@
                 </div>
                 <div class="status-title-group">
                   <h3 class="status-title text-green">WARRANTY ACTIVE</h3>
-                  <p class="status-subtitle">Your product is under warranty.</p>
+                  <p class="status-subtitle">Your INVO IT product is fully covered under active warranty.</p>
                 </div>
               </div>
 
               <div class="mockup-table">
                 <div class="table-row">
                   <span class="col-label">Product Name</span>
-                  <span class="col-val">{{ warrantyResult.productName || warrantyResult.product }}</span>
+                  <span class="col-val font-bold">{{ warrantyResult.productName }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Category & Model</span>
+                  <span class="col-val">{{ warrantyResult.category }} ({{ warrantyResult.brand }} - {{ warrantyResult.modelNo }})</span>
                 </div>
                 <div class="table-row">
                   <span class="col-label">Serial Number</span>
-                  <span class="col-val font-mono">{{ warrantyResult.serialNo || warrantyResult.serial }}</span>
+                  <span class="col-val font-mono"><code>{{ warrantyResult.serialNo }}</code></span>
+                </div>
+                
+                <!-- Invoice Details -->
+                <div class="table-row highlight-row invoice-row">
+                  <span class="col-label">Tax Invoice Number</span>
+                  <span class="col-val font-mono bold-text">{{ warrantyResult.invoiceNo || 'INV-2026-101' }}</span>
+                </div>
+                <div class="table-row highlight-row invoice-row">
+                  <span class="col-label">Invoice / Sale Date</span>
+                  <span class="col-val bold-text">{{ warrantyResult.invoiceDate || warrantyResult.warrantyStart }}</span>
                 </div>
                 <div class="table-row">
-                  <span class="col-label">Installation Date</span>
-                  <span class="col-val">{{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span>
+                  <span class="col-label">Seller / Partner</span>
+                  <span class="col-val">{{ warrantyResult.sellerName || 'INVO IT Authorized Partner' }}</span>
                 </div>
                 <div class="table-row">
-                  <span class="col-label">Warranty Period</span>
-                  <span class="col-val">{{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months (1 Year)' }}</span>
+                  <span class="col-label">Customer / End User</span>
+                  <span class="col-val bold-text">{{ warrantyResult.customerName }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">District (Zila)</span>
+                  <span class="col-val font-bold text-amber">{{ warrantyResult.zila || 'BILASPUR' }}</span>
+                </div>
+
+                <!-- Component Specifications if present -->
+                @if (warrantyResult.spec) {
+                  <div class="table-row specs-row">
+                    <span class="col-label">Component Specifications</span>
+                    <div class="col-val specs-pill-container">
+                      @if (warrantyResult.spec.processor) { <span>CPU: <strong>{{ warrantyResult.spec.processor }}</strong> ({{ warrantyResult.spec.processor_sn || 'N/A' }})</span> }
+                      @if (warrantyResult.spec.motherboard_sn) { <span>MB SN: {{ warrantyResult.spec.motherboard_sn }}</span> }
+                      @if (warrantyResult.spec.ram_size) { <span>RAM: {{ warrantyResult.spec.ram_size }} ({{ warrantyResult.spec.ram_sn || 'N/A' }})</span> }
+                      @if (warrantyResult.spec.ssd_size) { <span>SSD: {{ warrantyResult.spec.ssd_size }} ({{ warrantyResult.spec.ssd_sn || 'N/A' }})</span> }
+                      @if (warrantyResult.spec.cabinet_sn) { <span>Cabinet SN: {{ warrantyResult.spec.cabinet_sn }}</span> }
+                      @if (warrantyResult.spec.monitor_sn) { <span>Monitor SN: {{ warrantyResult.spec.monitor_sn }}</span> }
+                      @if (warrantyResult.spec.screen_size) { <span>Screen Size: {{ warrantyResult.spec.screen_size }}</span> }
+                      @if (warrantyResult.spec.watt) { <span>Wattage: {{ warrantyResult.spec.watt }}</span> }
+                      @if (warrantyResult.spec.ops_serial) { <span>OPS SN: {{ warrantyResult.spec.ops_serial }}</span> }
+                    </div>
+                  </div>
+                }
+
+                <!-- Individual Parts Warranty Breakdown for Computers -->
+                @if (warrantyResult.partWarranties && warrantyResult.partWarranties.length > 0) {
+                  <div class="parts-warranty-section">
+                    <div class="parts-warr-heading">
+                      <span class="material-icons-outlined">verified</span>
+                      <span>Computer Parts Individual Warranty Details</span>
+                    </div>
+                    <div class="parts-warr-table-container">
+                      <table class="parts-warr-table">
+                        <thead>
+                          <tr>
+                            <th>Component</th>
+                            <th>Serial No. / Model</th>
+                            <th>Warranty</th>
+                            <th>Valid Till</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (p of warrantyResult.partWarranties; track p.partName) {
+                            <tr>
+                              <td class="part-name-cell">
+                                <strong>{{ p.partName }}</strong>
+                              </td>
+                              <td class="part-sn-cell">
+                                <code>{{ p.serialNo }}</code>
+                                @if (p.details && p.details !== p.serialNo) {
+                                  <small class="part-detail-sub">({{ p.details }})</small>
+                                }
+                              </td>
+                              <td class="part-dur-cell">
+                                <span class="badge-months">{{ p.warrantyMonths }} Months</span>
+                              </td>
+                              <td class="part-exp-cell">
+                                {{ p.warrantyEnd }}
+                              </td>
+                              <td>
+                                <span class="part-badge" [class.badge-active]="p.status === 'Active'" [class.badge-expired]="p.status === 'Expired'">
+                                  {{ p.status }}
+                                </span>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+                
+                <!-- Overall Unit Warranty Period & Expiry -->
+                <div class="table-row">
+                  <span class="col-label">Overall Unit Warranty</span>
+                  <span class="col-val">{{ warrantyResult.warrantyPeriodMonths }} Months</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Start Date</span>
+                  <span class="col-val">{{ warrantyResult.warrantyStart }}</span>
                 </div>
                 <div class="table-row">
                   <span class="col-label">Warranty Valid Till</span>
-                  <span class="col-val">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                  <span class="col-val">{{ warrantyResult.warrantyEnd }}</span>
                 </div>
                 <div class="table-row highlight-row green-bg">
                   <span class="col-label text-green-dark">Warranty Remaining</span>
@@ -112,13 +207,86 @@
 
               <div class="info-alert green-alert">
                 <span class="material-icons-outlined">info</span>
-                <span>For any service or support, please contact our helpline.</span>
+                <span>For technical support, service requests or parts, please contact INVO IT helpline.</span>
               </div>
 
               <button class="btn-dark-navy" (click)="downloadWarrantyCard()" id="btn-download-card">
                 <span class="material-icons-outlined">download</span>
-                DOWNLOAD WARRANTY CARD
+                DOWNLOAD WARRANTY CERTIFICATE
               </button>
+            </div>
+          } @else if (warrantyResult.status === 'Pending Sale' || !warrantyResult.isActivated) {
+            <!-- RESULT - WARRANTY PENDING SALE & INVOICE -->
+            <div class="result-card-mockup pending-card" style="border-top: 4px solid #f59e0b;">
+              <div class="card-status-header" style="background: #fffbeb; border-bottom: 1px solid #fef3c7; padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
+                <div class="shield-icon" style="background: #f59e0b; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <span class="material-icons-outlined" style="font-size: 24px;">schedule</span>
+                </div>
+                <div class="status-title-group">
+                  <h3 class="status-title" style="color: #b45309; margin: 0; font-size: 18px; font-weight: 700;">WARRANTY NOT STARTED YET</h3>
+                  <p class="status-subtitle" style="margin: 2px 0 0; font-size: 13px; color: #78350f;">Product is genuine & registered. Warranty will calculate & start from customer Sale Date once invoiced.</p>
+                </div>
+              </div>
+
+              <div class="mockup-table">
+                <div class="table-row">
+                  <span class="col-label">Product Name</span>
+                  <span class="col-val font-bold">{{ warrantyResult.productName }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Category & Model</span>
+                  <span class="col-val">{{ warrantyResult.category }} ({{ warrantyResult.brand }} - {{ warrantyResult.modelNo }})</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Serial Number</span>
+                  <span class="col-val font-mono"><code>{{ warrantyResult.serialNo }}</code></span>
+                </div>
+                <div class="table-row highlight-row" style="background: #fefce8;">
+                  <span class="col-label">Customer Invoice Number</span>
+                  <span class="col-val font-mono" style="color: #b45309; font-weight: 700;">Pending Customer Sale</span>
+                </div>
+                <div class="table-row highlight-row" style="background: #fefce8;">
+                  <span class="col-label">Sale Date (Warranty Start)</span>
+                  <span class="col-val" style="color: #b45309; font-weight: 700;">Starts on Sale Date</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Official Warranty Coverage</span>
+                  <span class="col-val bold-text">{{ warrantyResult.warrantyPeriodMonths }} Months (Calculated from Sale Date)</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Assigned Dealer / Partner</span>
+                  <span class="col-val">{{ warrantyResult.sellerName || 'INVO IT Authorized Dealer' }}</span>
+                </div>
+                <div class="table-row">
+                  <span class="col-label">Warranty Status</span>
+                  <span class="col-val">
+                    <span style="background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="material-icons-outlined" style="font-size: 14px;">schedule</span>
+                      Pending Sale & Invoice
+                    </span>
+                  </span>
+                </div>
+
+                <!-- Component Specifications if present -->
+                @if (warrantyResult.spec) {
+                  <div class="table-row specs-row">
+                    <span class="col-label">Component Specifications</span>
+                    <div class="col-val specs-pill-container">
+                      @if (warrantyResult.spec.processor) { <span>CPU: <strong>{{ warrantyResult.spec.processor }}</strong></span> }
+                      @if (warrantyResult.spec.motherboard_sn) { <span>MB SN: {{ warrantyResult.spec.motherboard_sn }}</span> }
+                      @if (warrantyResult.spec.ram_size) { <span>RAM: {{ warrantyResult.spec.ram_size }}</span> }
+                      @if (warrantyResult.spec.ssd_size) { <span>SSD: {{ warrantyResult.spec.ssd_size }}</span> }
+                      @if (warrantyResult.spec.cabinet_sn) { <span>Cabinet SN: {{ warrantyResult.spec.cabinet_sn }}</span> }
+                      @if (warrantyResult.spec.screen_size) { <span>Screen Size: {{ warrantyResult.spec.screen_size }}</span> }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="info-alert" style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 12px 16px; border-radius: 8px; margin: 16px 20px; display: flex; align-items: center; gap: 10px;">
+                <span class="material-icons-outlined" style="color: #d97706;">info</span>
+                <span>{{ warrantyResult.message }}</span>
+              </div>
             </div>
           } @else {
             <!-- RESULT - WARRANTY EXPIRED -->
@@ -129,43 +297,43 @@
                 </div>
                 <div class="status-title-group">
                   <h3 class="status-title text-red">WARRANTY EXPIRED</h3>
-                  <p class="status-subtitle">Your product warranty has expired.</p>
+                  <p class="status-subtitle">Your product warranty period has ended.</p>
                 </div>
               </div>
 
               <div class="mockup-table">
                 <div class="table-row">
                   <span class="col-label">Product Name</span>
-                  <span class="col-val">{{ warrantyResult.productName || warrantyResult.product }}</span>
+                  <span class="col-val font-bold">{{ warrantyResult.productName }}</span>
                 </div>
                 <div class="table-row">
                   <span class="col-label">Serial Number</span>
-                  <span class="col-val font-mono">{{ warrantyResult.serialNo || warrantyResult.serial }}</span>
+                  <span class="col-val font-mono"><code>{{ warrantyResult.serialNo }}</code></span>
                 </div>
                 <div class="table-row">
-                  <span class="col-label">Installation Date</span>
-                  <span class="col-val">{{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span>
+                  <span class="col-label">Tax Invoice Number</span>
+                  <span class="col-val font-mono">{{ warrantyResult.invoiceNo || 'INV-2026-101' }}</span>
                 </div>
                 <div class="table-row">
-                  <span class="col-label">Warranty Period</span>
-                  <span class="col-val">{{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months (1 Year)' }}</span>
+                  <span class="col-label">Invoice Date</span>
+                  <span class="col-val">{{ warrantyResult.invoiceDate || warrantyResult.warrantyStart }}</span>
                 </div>
                 <div class="table-row">
                   <span class="col-label">Warranty Valid Till</span>
-                  <span class="col-val">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                  <span class="col-val">{{ warrantyResult.warrantyEnd }}</span>
                 </div>
                 <div class="table-row highlight-row red-bg">
                   <span class="col-label text-red-dark">Warranty Expired On</span>
-                  <span class="col-val text-red-dark bold-lg">{{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span>
+                  <span class="col-val text-red-dark bold-lg">{{ warrantyResult.warrantyEnd }}</span>
                 </div>
               </div>
 
               <div class="info-alert red-alert">
                 <span class="material-icons-outlined">info</span>
-                <span>Your warranty period has expired. You can still book a paid service.</span>
+                <span>Your warranty period has expired. You can still book a paid service with genuine INVO IT spare parts.</span>
               </div>
 
-              <a routerLink="/service" [queryParams]="{ serial: warrantyResult.serialNo || warrantyResult.serial, type: 'Repair' }" class="btn-dark-navy link-btn" id="btn-book-service">
+              <a routerLink="/service" [queryParams]="{ serial: warrantyResult.serialNo, type: 'Repair' }" class="btn-dark-navy link-btn" id="btn-book-service">
                 <span class="material-icons-outlined">handyman</span>
                 BOOK PAID SERVICE
               </a>
@@ -180,12 +348,12 @@
               </div>
               <div class="status-title-group">
                 <h3 class="status-title text-red">RECORD NOT FOUND</h3>
-                <p class="status-subtitle">No warranty details matching this serial number.</p>
+                <p class="status-subtitle">No warranty record matching this serial number in INVO IT database.</p>
               </div>
             </div>
             <p class="error-msg-text">{{ warrantyResult.message }}</p>
             <div class="error-links-group">
-              <a href="tel:1800-123-4567" class="btn-outline">
+              <a href="tel:9876543210" class="btn-outline">
                 <span class="material-icons-outlined">phone</span>
                 Call Helpline
               </a>
@@ -207,7 +375,7 @@
   <div class="modal-backdrop" (click)="closeCardModal()">
     <div class="modal-content print-area" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Warranty Certificate Preview</h3>
+        <h3>INVO IT Warranty Certificate Preview</h3>
         <button class="btn-close" (click)="closeCardModal()">
           <span class="material-icons-outlined">close</span>
         </button>
@@ -216,23 +384,40 @@
       <div class="card-certificate modal-cert">
         <div class="cert-header">
           <div class="brand-logo">
-            <span class="brand-title">MASTO / MWC</span>
-            <span class="brand-tagline">TRUSTED QUALITY ALWAYS</span>
+            <span class="brand-title">INVO IT INDUSTRIES</span>
+            <span class="brand-tagline">EMPOWERING INDIA WITH TECHNOLOGY & MANUFACTURING</span>
           </div>
           <div class="cert-title">OFFICIAL WARRANTY CERTIFICATE</div>
         </div>
 
         <div class="cert-body">
           <div class="product-thumb">
-            <span class="material-icons-outlined thumb-icon">water_drop</span>
+            <span class="material-icons-outlined thumb-icon">verified_user</span>
           </div>
           <div class="cert-details">
-            <div class="cert-row"><span>Product Name</span><span>: {{ warrantyResult.productName || warrantyResult.product }}</span></div>
-            <div class="cert-row"><span>Serial Number</span><span>: {{ warrantyResult.serialNo || warrantyResult.serial }}</span></div>
-            <div class="cert-row"><span>Customer Name</span><span>: {{ warrantyResult.customerName || 'Registered Customer' }}</span></div>
-            <div class="cert-row"><span>Installation Date</span><span>: {{ warrantyResult.installationDate || warrantyResult.purchaseDate }}</span></div>
-            <div class="cert-row"><span>Warranty Period</span><span>: {{ (warrantyResult.warrantyPeriodMonths || 12) + ' Months' }}</span></div>
-            <div class="cert-row"><span>Warranty Valid Till</span><span>: {{ warrantyResult.warrantyEndDate || warrantyResult.expiryDate }}</span></div>
+            <div class="cert-row"><span>Product Name</span><span>: {{ warrantyResult.productName }}</span></div>
+            <div class="cert-row"><span>Model & Category</span><span>: {{ warrantyResult.modelNo }} ({{ warrantyResult.category }})</span></div>
+            <div class="cert-row"><span>Serial Number</span><span>: {{ warrantyResult.serialNo }}</span></div>
+            <div class="cert-row"><span>Tax Invoice No</span><span>: {{ warrantyResult.invoiceNo || 'INV-2026-101' }}</span></div>
+            <div class="cert-row"><span>Invoice Date</span><span>: {{ warrantyResult.invoiceDate || warrantyResult.warrantyStart }}</span></div>
+            <div class="cert-row"><span>Seller / Partner</span><span>: {{ warrantyResult.sellerName || 'INVO IT Authorized Partner' }}</span></div>
+            <div class="cert-row"><span>Customer Name</span><span>: {{ warrantyResult.customerName }}</span></div>
+            <div class="cert-row"><span>District (Zila)</span><span>: {{ warrantyResult.zila || 'BILASPUR' }}</span></div>
+            <div class="cert-row"><span>Warranty Period</span><span>: {{ warrantyResult.warrantyPeriodMonths }} Months</span></div>
+            <div class="cert-row"><span>Warranty Valid Till</span><span>: {{ warrantyResult.warrantyEnd }}</span></div>
+
+            @if (warrantyResult.partWarranties && warrantyResult.partWarranties.length > 0) {
+              <div class="cert-parts-breakdown">
+                <span class="cert-parts-label">Parts Individual Warranty:</span>
+                <div class="cert-parts-chips">
+                  @for (p of warrantyResult.partWarranties; track p.partName) {
+                    <span class="cert-part-item">
+                      <strong>{{ p.partName }}:</strong> {{ p.warrantyMonths }} Mo
+                    </span>
+                  }
+                </div>
+              </div>
+            }
           </div>
         </div>
 
@@ -241,68 +426,13 @@
             STATUS : WARRANTY {{ warrantyResult.status.toUpperCase() }}
           </div>
           <div class="footer-right">
-            <div class="qr-placeholder">
-              <svg class="qr-code-svg" width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100" height="100" fill="white" rx="6"/>
-                <!-- Position Detection Patterns -->
-                <rect x="6" y="6" width="28" height="28" fill="#0b2545" rx="3"/>
-                <rect x="12" y="12" width="16" height="16" fill="white" rx="2"/>
-                <rect x="16" y="16" width="8" height="8" fill="#0b2545" rx="1"/>
-
-                <rect x="66" y="6" width="28" height="28" fill="#0b2545" rx="3"/>
-                <rect x="72" y="12" width="16" height="16" fill="white" rx="2"/>
-                <rect x="76" y="16" width="8" height="8" fill="#0b2545" rx="1"/>
-
-                <rect x="6" y="66" width="28" height="28" fill="#0b2545" rx="3"/>
-                <rect x="12" y="72" width="16" height="16" fill="white" rx="2"/>
-                <rect x="16" y="76" width="8" height="8" fill="#0b2545" rx="1"/>
-
-                <!-- Data Matrix Modules -->
-                <rect x="40" y="8" width="6" height="6" fill="#0b2545"/>
-                <rect x="50" y="8" width="6" height="6" fill="#0b2545"/>
-                <rect x="40" y="18" width="6" height="6" fill="#0b2545"/>
-                <rect x="54" y="18" width="6" height="6" fill="#0b2545"/>
-                <rect x="44" y="28" width="6" height="6" fill="#0b2545"/>
-                <rect x="54" y="28" width="6" height="6" fill="#0b2545"/>
-
-                <rect x="8" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="20" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="30" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="42" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="54" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="66" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="78" y="40" width="6" height="6" fill="#0b2545"/>
-                <rect x="88" y="40" width="6" height="6" fill="#0b2545"/>
-
-                <rect x="14" y="50" width="6" height="6" fill="#0b2545"/>
-                <rect x="44" y="50" width="6" height="6" fill="#0b2545"/>
-                <rect x="58" y="50" width="6" height="6" fill="#0b2545"/>
-                <rect x="70" y="50" width="6" height="6" fill="#0b2545"/>
-                <rect x="84" y="50" width="6" height="6" fill="#0b2545"/>
-
-                <rect x="40" y="64" width="6" height="6" fill="#0b2545"/>
-                <rect x="52" y="64" width="6" height="6" fill="#0b2545"/>
-                <rect x="64" y="64" width="6" height="6" fill="#0b2545"/>
-                <rect x="78" y="64" width="6" height="6" fill="#0b2545"/>
-
-                <rect x="44" y="76" width="6" height="6" fill="#0b2545"/>
-                <rect x="58" y="76" width="6" height="6" fill="#0b2545"/>
-                <rect x="70" y="76" width="6" height="6" fill="#0b2545"/>
-                <rect x="84" y="76" width="6" height="6" fill="#0b2545"/>
-
-                <rect x="40" y="86" width="6" height="6" fill="#0b2545"/>
-                <rect x="52" y="86" width="6" height="6" fill="#0b2545"/>
-                <rect x="66" y="86" width="6" height="6" fill="#0b2545"/>
-                <rect x="78" y="86" width="6" height="6" fill="#0b2545"/>
-              </svg>
-            </div>
             <div class="signature">
-              <span class="sig-font">Ann Fram</span>
+              <span class="sig-font">INVO IT Quality Dept</span>
               <span class="sig-title">Authorised Signatory</span>
             </div>
           </div>
         </div>
-        <div class="cert-bottom-text">Thank you for choosing Masto / MWC products.</div>
+        <div class="cert-bottom-text">Thank you for choosing INVO IT Industries Pvt. Ltd. products.</div>
       </div>
 
       <div class="modal-actions">

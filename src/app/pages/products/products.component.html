@@ -1,37 +1,103 @@
 <section class="page-hero">
   <div class="page-hero-content">
-    <h1>Our <span class="highlight">Products</span></h1>
-    <p>Premium water solutions designed for every need. Quality you can trust.</p>
+    <h1>Our Technology <span class="highlight">Products</span></h1>
+    <p>Reliable, innovative and value-driven hardware products & solutions by INVO IT Industries Pvt. Ltd.</p>
   </div>
 </section>
 
 <section class="products-section">
   <div class="products-container">
-    <div class="products-grid">
-      @for (product of products; track product.name) {
-        <div class="product-card">
-          <div class="product-badge">{{ product.badge }}</div>
-          <div class="product-visual">
-            <span class="material-icons-outlined product-icon">{{ product.icon }}</span>
-          </div>
-          <div class="product-info">
-            <span class="product-category">{{ product.category }}</span>
-            <h3 class="product-name">{{ product.name }}</h3>
-            <ul class="product-features">
-              @for (feat of product.features; track feat) {
+    <!-- Filter & Search Controls Bar -->
+    <div class="products-control-bar">
+      <!-- Category Filter Pills -->
+      <div class="category-pills">
+        @for (cat of categories; track cat) {
+          <button
+            class="pill-btn"
+            [class.active]="selectedCategory === cat"
+            (click)="selectedCategory = cat">
+            {{ cat }}
+          </button>
+        }
+      </div>
+
+      <!-- Search Box -->
+      <div class="products-search-box">
+        <span class="material-icons-outlined search-icon">search</span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by product name or model..."
+          class="search-input"
+        />
+        @if (searchQuery) {
+          <button (click)="searchQuery = ''" class="clear-search-btn">&times;</button>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Loading products from INVO IT database...</p>
+      </div>
+    } @else if (filteredProducts.length === 0) {
+      <div class="empty-products">
+        <span class="material-icons-outlined empty-icon">inventory_2</span>
+        <h3>No Products Found</h3>
+        <p>No products match your current search criteria.</p>
+        <button class="btn-reset-filter" (click)="selectedCategory = 'All'; searchQuery = ''">Reset Filters</button>
+      </div>
+    } @else {
+      <!-- Products Grid -->
+      <div class="products-grid animate-fade-in">
+        @for (product of filteredProducts; track product.model_id) {
+          <div class="product-card">
+            <div class="product-badge">{{ product.badge || (product.warranty_month + ' Months Warranty') }}</div>
+            <div class="product-visual">
+              <span class="material-icons-outlined product-icon">{{ getCategoryIcon(product.category_name) }}</span>
+            </div>
+            <div class="product-info">
+              <span class="product-category">{{ product.category_name }}</span>
+              <h3 class="product-name">{{ product.product_name }}</h3>
+              <p class="model-tag">
+                <span>Brand: <strong>{{ product.brand }}</strong></span> • 
+                <span>Model: <strong>{{ product.model_no }}</strong></span>
+              </p>
+              
+              <ul class="product-features">
                 <li>
-                  <span class="material-icons-outlined">check_circle</span>
-                  {{ feat }}
+                  <span class="material-icons-outlined">verified</span>
+                  {{ product.warranty_month }} Months Official Warranty
                 </li>
-              }
-            </ul>
-            <div class="product-footer">
-              <span class="product-price">{{ product.price }}</span>
-              <a routerLink="/warranty-check" class="product-btn">Check Warranty</a>
+                <li>
+                  <span class="material-icons-outlined">precision_manufacturing</span>
+                  Make in India Technology
+                </li>
+                <li>
+                  <span class="material-icons-outlined">build</span>
+                  Full Support & Genuine Parts
+                </li>
+              </ul>
+
+              <div class="product-footer">
+                <div class="warranty-tag-box">
+                  <span class="warranty-term">{{ product.warranty_month }}M Coverage</span>
+                </div>
+                <div class="card-action-btns">
+                  <a routerLink="/warranty-check" class="product-btn secondary-btn" title="Check Warranty Status">
+                    <span class="material-icons-outlined">verified_user</span> Check Warranty
+                  </a>
+                  <a routerLink="/contact" class="product-btn primary-btn" title="Contact Sales / Dealer Query">
+                    <span class="material-icons-outlined">mail</span> Inquire
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   </div>
 </section>

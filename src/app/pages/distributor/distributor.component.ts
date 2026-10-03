@@ -1,25 +1,41 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
-interface WholesaleProduct {
-  id: number;
-  code: string;
-  name: string;
-  category: string;
-  retailPrice: number;
-  wholesalePrice: number;
-  stockAvailable: number;
-  orderQty: number;
+export interface DistributorInventoryItem {
+  unit_id: number;
+  category_id: number;
+  category_name: string;
+  model_no: string;
+  product_name: string;
+  serial_no: string;
+  warranty_months: number;
+  specs: any;
+  status: 'IN_STOCK' | 'SOLD';
+  assigned_party_id: number;
+  assigned_party_name: string;
+  dispatch_date: string;
+  sale_info?: {
+    invoice_no: string;
+    invoice_date: string;
+    customer_name: string;
+    zila: string;
+    seller_party_id: number;
+    seller_party_name: string;
+    sale_type: string;
+    warranty_start: string;
+    warranty_end: string;
+  };
 }
 
-interface DistributorOrder {
-  orderId: string;
-  date: string;
-  itemsCount: number;
-  totalAmount: number;
-  status: 'Processing' | 'Dispatched' | 'Delivered';
-  trackingNumber: string;
+export interface DistributorParty {
+  party_id: number;
+  party_name: string;
+  contact_person: string;
+  mobile: string;
+  gst_no: string;
+  district: string;
 }
 
 @Component({
@@ -28,114 +44,280 @@ interface DistributorOrder {
   templateUrl: './distributor.component.html',
   styleUrl: './distributor.component.css'
 })
-export class DistributorComponent {
-  Math = Math; // Expose Math for template calculations
+export class DistributorComponent implements OnInit {
+  authService = inject(AuthService);
+  Math = Math;
 
-  activeTab: 'catalog' | 'orders' | 'activation' | 'analytics' = 'catalog';
+  activeTab: 'registered' = 'registered';
 
-  distributorInfo = {
-    name: 'Apex Water Solutions Pvt Ltd',
-    code: 'DIST-MUM-402',
-    tier: 'Gold Partner (25% Discount)',
-    region: 'Western Region (Mumbai / Pune)',
-    manager: 'Vikram Singh (+91 98200 11223)',
-    address: 'Plot 42, MIDC Industrial Area, Andheri East, Mumbai 400093',
-    gstin: '27AAACA1234B1Z5'
+  // Available Distributors in system - Loaded from MariaDB mst_party
+  distributors: DistributorParty[] = [];
+
+  selectedDistributorId = 2;
+  inventory: DistributorInventoryItem[] = [];
+
+  // Logout confirmation state
+  showLogoutConfirmModal = false;
+
+  // Sale Modal State
+  showSaleModal = false;
+  selectedUnitForSale: DistributorInventoryItem | null = null;
+  saleFormData = {
+    invoice_no: '',
+    invoice_date: new Date().toISOString().split('T')[0],
+    customer_name: 'AC TRIBLE DIPARTMENT',
+    zila: 'BILASPUR'
   };
 
-  // Modals & State
-  showOrderModal = false;
-  showActivationModal = false;
-  showInvoiceModal = false;
-  selectedOrderForInvoice: DistributorOrder | null = null;
-  orderSuccessMessage = '';
+  saleSuccessMessage = '';
+  saleErrorMessage = '';
+  isSubmittingSale = false;
 
-  // Customer Warranty Activation Form Data
-  activationData = {
-    serialNumber: '',
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
-    installationDate: ''
-  };
+  // Search filter
+  searchQuery = '';
 
-  // Wholesale Products Catalog
-  products: WholesaleProduct[] = [
-    { id: 1, code: 'MWC-AP500', name: 'MWC AquaPure 500', category: 'RO Water Purifier', retailPrice: 12999, wholesalePrice: 9749, stockAvailable: 120, orderQty: 0 },
-    { id: 2, code: 'MWC-CC300', name: 'MWC CrystalClear 300', category: 'UV Water Purifier', retailPrice: 8499, wholesalePrice: 6374, stockAvailable: 85, orderQty: 0 },
-    { id: 3, code: 'MWC-PC700', name: 'MWC ProClean 700', category: 'RO+UV+UF Purifier', retailPrice: 18999, wholesalePrice: 14249, stockAvailable: 60, orderQty: 0 },
-    { id: 4, code: 'MWC-SF200', name: 'MWC SmartFlow 200', category: 'Gravity Water Purifier', retailPrice: 3999, wholesalePrice: 2999, stockAvailable: 200, orderQty: 0 },
-    { id: 5, code: 'MWC-INDPRO', name: 'MWC Industrial Pro', category: 'Commercial Purifier', retailPrice: 49999, wholesalePrice: 37499, stockAvailable: 15, orderQty: 0 },
-    { id: 6, code: 'MWC-TG100', name: 'MWC TankGuard', category: 'Water Tank Cleaner', retailPrice: 6999, wholesalePrice: 5249, stockAvailable: 90, orderQty: 0 }
-  ];
-
-  // Orders History
-  orders: DistributorOrder[] = [
-    { orderId: 'DIST-2026-904', date: '2026-08-28', itemsCount: 25, totalAmount: 243725, status: 'Dispatched', trackingNumber: 'TRK-BXL-88192' },
-    { orderId: 'DIST-2026-871', date: '2026-08-15', itemsCount: 40, totalAmount: 389960, status: 'Delivered', trackingNumber: 'TRK-BXL-77102' },
-    { orderId: 'DIST-2026-810', date: '2026-07-30', itemsCount: 15, totalAmount: 146235, status: 'Delivered', trackingNumber: 'TRK-BXL-55410' }
-  ];
-
-  // Calculated Order Total
-  get totalCartItems(): number {
-    return this.products.reduce((acc, p) => acc + p.orderQty, 0);
+  ngOnInit() {
+    this.fetchDistributors();
   }
 
-  get totalCartValue(): number {
-    return this.products.reduce((acc, p) => acc + (p.orderQty * p.wholesalePrice), 0);
+  fetchDistributors() {
+    const loggedIn = this.authService.getDistributor();
+    fetch('http://localhost:3000/api/parties')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          this.distributors = data.filter((p: any) => p.party_type === 'DISTRIBUTOR');
+          if (loggedIn && loggedIn.party_id) {
+            this.selectedDistributorId = loggedIn.party_id;
+          } else if (this.distributors.length > 0) {
+            this.selectedDistributorId = this.distributors[0].party_id;
+          }
+          this.fetchDistributorInventory();
+        }
+      })
+      .catch(() => {
+        this.fetchDistributorInventory();
+      });
   }
 
-  get totalCartSavings(): number {
-    return this.products.reduce((acc, p) => acc + (p.orderQty * (p.retailPrice - p.wholesalePrice)), 0);
+  promptLogout() {
+    this.showLogoutConfirmModal = true;
   }
 
-  updateQty(product: WholesaleProduct, delta: number) {
-    product.orderQty = Math.max(0, product.orderQty + delta);
+  confirmLogout() {
+    this.showLogoutConfirmModal = false;
+    this.authService.logoutDistributor();
   }
 
-  placeBulkOrder() {
-    if (this.totalCartItems === 0) return;
+  cancelLogout() {
+    this.showLogoutConfirmModal = false;
+  }
 
-    const newOrder: DistributorOrder = {
-      orderId: `DIST-2026-${Math.floor(100 + Math.random() * 900)}`,
-      date: new Date().toISOString().split('T')[0],
-      itemsCount: this.totalCartItems,
-      totalAmount: this.totalCartValue,
-      status: 'Processing',
-      trackingNumber: `TRK-BXL-${Math.floor(10000 + Math.random() * 90000)}`
+  get isSelfDistributor(): boolean {
+    return this.authService.isDistributorLoggedIn();
+  }
+
+  get currentDistributor(): DistributorParty {
+    const loggedIn = this.authService.getDistributor();
+    if (loggedIn && loggedIn.party_id) {
+      return {
+        party_id: loggedIn.party_id,
+        party_name: loggedIn.party_name,
+        contact_person: loggedIn.contact_person,
+        mobile: loggedIn.mobile,
+        gst_no: loggedIn.gst_no,
+        district: loggedIn.district
+      };
+    }
+    const found = this.distributors.find(d => d.party_id === Number(this.selectedDistributorId));
+    if (found) return found;
+    if (this.distributors.length > 0) return this.distributors[0];
+    return {
+      party_id: 2,
+      party_name: 'Authorized Dealer',
+      contact_person: '',
+      mobile: '',
+      gst_no: '',
+      district: 'BILASPUR'
+    };
+  }
+
+  onDistributorChange() {
+    this.fetchDistributorInventory();
+  }
+
+  fetchDistributorInventory() {
+    const loggedIn = this.authService.getDistributor();
+    const partyId = (loggedIn && loggedIn.party_id) ? loggedIn.party_id : this.selectedDistributorId;
+    fetch(`http://localhost:3000/api/distributor/inventory/${partyId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          this.inventory = data;
+        }
+      })
+      .catch(() => {
+        // Fallback in-memory filter if backend offline
+        fetch('http://localhost:3000/api/inventory')
+          .then(r => r.json())
+          .then(all => {
+            if (Array.isArray(all)) {
+              this.inventory = all.filter((u: any) => u.assigned_party_id === Number(partyId));
+            }
+          })
+          .catch(() => {});
+      });
+  }
+
+  get registeredList(): DistributorInventoryItem[] {
+    return this.inventory.filter(u => this.matchesSearch(u));
+  }
+
+  // Pagination
+  distPage = 1;
+  distPageSize = 10;
+
+  get distTotalPages(): number {
+    return Math.max(1, Math.ceil(this.registeredList.length / this.distPageSize));
+  }
+
+  get pagedRegisteredList(): DistributorInventoryItem[] {
+    const start = (this.distPage - 1) * this.distPageSize;
+    return this.registeredList.slice(start, start + this.distPageSize);
+  }
+
+  setDistPage(p: number) {
+    this.distPage = Math.max(1, Math.min(this.distTotalPages, p));
+  }
+
+  get distPagesArray(): number[] {
+    const total = this.distTotalPages;
+    const current = this.distPage;
+    if (total <= 5) {
+      const arr = [];
+      for (let i = 1; i <= total; i++) arr.push(i);
+      return arr;
+    }
+    const start = Math.max(1, Math.min(total - 4, current - 2));
+    const end = Math.min(total, start + 4);
+    const arr = [];
+    for (let i = start; i <= end; i++) arr.push(i);
+    return arr;
+  }
+
+  matchesSearch(item: DistributorInventoryItem): boolean {
+    if (!this.searchQuery.trim()) return true;
+    const q = this.searchQuery.toLowerCase();
+    const serialMatch = item.serial_no.toLowerCase().includes(q);
+    const modelMatch = item.model_no.toLowerCase().includes(q);
+    const nameMatch = item.product_name.toLowerCase().includes(q);
+    const custMatch = item.sale_info?.customer_name.toLowerCase().includes(q) || false;
+    const invMatch = item.sale_info?.invoice_no.toLowerCase().includes(q) || false;
+    return serialMatch || modelMatch || nameMatch || custMatch || invMatch;
+  }
+
+  get isUnitAlreadySold(): boolean {
+    if (!this.selectedUnitForSale) return false;
+    return Boolean(
+      this.selectedUnitForSale.status === 'SOLD' ||
+      (this.selectedUnitForSale.sale_info &&
+       this.selectedUnitForSale.sale_info.invoice_no &&
+       this.selectedUnitForSale.sale_info.invoice_no !== 'N/A' &&
+       this.selectedUnitForSale.sale_info.invoice_date)
+    );
+  }
+
+  openRegisterModal(unit?: DistributorInventoryItem) {
+    if (unit) {
+      this.selectedUnitForSale = unit;
+      this.saleFormData.invoice_no = unit.sale_info?.invoice_no || '';
+      this.saleFormData.invoice_date = unit.sale_info?.invoice_date || new Date().toISOString().split('T')[0];
+      this.saleFormData.customer_name = unit.sale_info?.customer_name || 'AC TRIBLE DIPARTMENT';
+      this.saleFormData.zila = unit.sale_info?.zila || this.currentDistributor.district || 'BILASPUR';
+    } else if (this.inventory.length) {
+      this.selectedUnitForSale = this.inventory[0];
+      this.saleFormData.invoice_no = '';
+      this.saleFormData.invoice_date = new Date().toISOString().split('T')[0];
+      this.saleFormData.customer_name = 'AC TRIBLE DIPARTMENT';
+      this.saleFormData.zila = this.currentDistributor.district || 'BILASPUR';
+    }
+    this.saleErrorMessage = '';
+    this.saleSuccessMessage = '';
+    this.showSaleModal = true;
+  }
+
+  openSaleModal(unit: DistributorInventoryItem) {
+    this.openRegisterModal(unit);
+  }
+
+  closeSaleModal() {
+    this.showSaleModal = false;
+    this.selectedUnitForSale = null;
+  }
+
+  submitSale() {
+    if (!this.selectedUnitForSale) return;
+
+    if (this.isUnitAlreadySold) {
+      this.saleErrorMessage = 'Invoice Number and Sale Date cannot be edited once saved.';
+      return;
+    }
+
+    if (!this.saleFormData.invoice_no || !this.saleFormData.invoice_no.trim()) {
+      this.saleErrorMessage = 'Customer Invoice Number is mandatory. Warranty can only start after entering invoice number and sale date.';
+      return;
+    }
+
+    if (!this.saleFormData.invoice_date) {
+      this.saleErrorMessage = 'Sale Date is mandatory. Warranty will be calculated from this sale date.';
+      return;
+    }
+
+    if (!this.saleFormData.customer_name.trim()) {
+      this.saleErrorMessage = 'End User / Customer Name is required.';
+      return;
+    }
+
+    this.isSubmittingSale = true;
+    this.saleErrorMessage = '';
+
+    const invNo = this.saleFormData.invoice_no.trim();
+
+    const payload = {
+      serial_no: this.selectedUnitForSale.serial_no,
+      invoice_no: invNo,
+      invoice_date: this.saleFormData.invoice_date,
+      customer_name: this.saleFormData.customer_name.trim(),
+      zila: this.saleFormData.zila.trim() || 'BILASPUR',
+      seller_party_id: this.selectedDistributorId
     };
 
-    this.orders.unshift(newOrder);
-
-    // Reset quantities
-    this.products.forEach(p => p.orderQty = 0);
-    this.showOrderModal = false;
-    this.orderSuccessMessage = `Order ${newOrder.orderId} submitted successfully! Your account manager has been notified.`;
-
-    setTimeout(() => {
-      this.orderSuccessMessage = '';
-    }, 5000);
-  }
-
-  activateWarranty() {
-    if (!this.activationData.serialNumber || !this.activationData.customerName) return;
-
-    this.showActivationModal = false;
-    this.orderSuccessMessage = `Customer Warranty for Serial ${this.activationData.serialNumber.toUpperCase()} activated successfully!`;
-    this.activationData = { serialNumber: '', customerName: '', customerEmail: '', customerPhone: '', installationDate: '' };
-
-    setTimeout(() => {
-      this.orderSuccessMessage = '';
-    }, 5000);
-  }
-
-  // Download Invoice Action
-  viewInvoice(order: DistributorOrder) {
-    this.selectedOrderForInvoice = order;
-    this.showInvoiceModal = true;
-  }
-
-  printInvoice() {
-    window.print();
+    fetch('http://localhost:3000/api/distributor/sell', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(r => r.json())
+      .then(res => {
+        this.isSubmittingSale = false;
+        if (res.success) {
+          this.saleSuccessMessage = `Product ${res.data.serial_no} warranty successfully registered! Active till ${res.data.sale_info.warranty_end}.`;
+          // Update item in local list
+          const idx = this.inventory.findIndex(u => u.serial_no === res.data.serial_no);
+          if (idx !== -1) {
+            this.inventory[idx] = res.data;
+          }
+          setTimeout(() => {
+            this.closeSaleModal();
+            this.activeTab = 'registered';
+          }, 1800);
+        } else {
+          this.saleErrorMessage = res.message || 'Failed to complete sale.';
+        }
+      })
+      .catch(err => {
+        this.isSubmittingSale = false;
+        this.saleErrorMessage = 'Error connecting to API server.';
+      });
   }
 }

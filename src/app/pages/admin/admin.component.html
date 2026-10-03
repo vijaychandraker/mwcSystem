@@ -5,25 +5,47 @@
       <div class="admin-title-area">
         <span class="material-icons-outlined admin-badge-icon">admin_panel_settings</span>
         <div>
-          <h1>MWC Admin Portal</h1>
-          <p>System Overview & Data Management Center</p>
+          <h1>MWC Administration Portal</h1>
+          <p>Serial Number Registry & Warranty Management | INVO IT Industries Pvt. Ltd.</p>
         </div>
       </div>
 
-      <!-- Quick Search Bar -->
-      <div class="admin-search-bar">
-        <span class="material-icons-outlined search-icon">search</span>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          placeholder="Search serial, product, or customer..."
-          class="admin-search-input"
-        />
-        @if (searchQuery) {
-          <button (click)="searchQuery = ''" class="clear-btn">
-            <span class="material-icons-outlined">close</span>
+      <!-- Quick Search Bar & Action -->
+      <div class="admin-header-actions">
+        <div class="admin-search-bar">
+          <span class="material-icons-outlined search-icon">search</span>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search serial, component, invoice, dealer..."
+            class="admin-search-input"
+          />
+          @if (searchQuery) {
+            <button (click)="searchQuery = ''" class="clear-btn">
+              <span class="material-icons-outlined">close</span>
+            </button>
+          }
+        </div>
+
+        <button class="btn-highlight-entry" (click)="openProductEntryModal()">
+          <span class="material-icons-outlined">add_circle</span>
+          + New Product Entry
+        </button>
+
+        <!-- Logged-in Admin Profile & Logout -->
+        <div class="admin-user-pill">
+          <div class="admin-avatar">
+            <span class="material-icons-outlined">admin_panel_settings</span>
+          </div>
+          <div class="admin-user-meta">
+            <span class="admin-user-name">{{ currentUser()?.displayName || 'Administrator' }}</span>
+            <span class="admin-user-role">Super Admin</span>
+          </div>
+          <button (click)="logout()" class="btn-admin-logout" title="Sign out of Admin Portal">
+            <span class="material-icons-outlined">logout</span>
+            <span>Logout</span>
           </button>
-        }
+        </div>
       </div>
     </div>
   </div>
@@ -31,40 +53,39 @@
   <div class="admin-container">
     <!-- Navigation Tabs -->
     <div class="admin-tabs">
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'overview'"
-        (click)="activeTab = 'overview'">
+      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
         <span class="material-icons-outlined">dashboard</span>
         Overview
       </button>
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'warranties'"
-        (click)="activeTab = 'warranties'">
-        <span class="material-icons-outlined">verified_user</span>
-        Warranties ({{ warranties.length }})
+
+      <button class="tab-btn" [class.active]="activeTab === 'inventory'" (click)="activeTab = 'inventory'">
+        <span class="material-icons-outlined">devices</span>
+        Serials & Warranties ({{ inventory.length }})
       </button>
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'products'"
-        (click)="activeTab = 'products'">
+
+      <button class="tab-btn" [class.active]="activeTab === 'parties'" (click)="activeTab = 'parties'">
+        <span class="material-icons-outlined">storefront</span>
+        Parties & Dealers ({{ parties.length }})
+      </button>
+
+      <button class="tab-btn" [class.active]="activeTab === 'models'" (click)="activeTab = 'models'">
         <span class="material-icons-outlined">inventory_2</span>
-        Products ({{ products.length }})
+        Product Models ({{ models.length }})
       </button>
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'service'"
-        (click)="activeTab = 'service'">
-        <span class="material-icons-outlined">build</span>
-        Service Tickets ({{ tickets.length }})
+
+      <button class="tab-btn" [class.active]="activeTab === 'invoices'" (click)="activeTab = 'invoices'">
+        <span class="material-icons-outlined">fact_check</span>
+        Sales & Dispatches ({{ invoices.length }})
       </button>
-      <button
-        class="tab-btn"
-        [class.active]="activeTab === 'customers'"
-        (click)="activeTab = 'customers'">
+
+      <button class="tab-btn" [class.active]="activeTab === 'customers'" (click)="activeTab = 'customers'">
         <span class="material-icons-outlined">people</span>
-        Customers ({{ customers.length }})
+        End Users & Clients ({{ customers.length }})
+      </button>
+
+      <button class="tab-btn badge-tab" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+        <span class="material-icons-outlined">manage_accounts</span>
+        Sub-Users & Logins ({{ subUsers.length }})
       </button>
     </div>
 
@@ -72,70 +93,92 @@
     @if (activeTab === 'overview') {
       <div class="overview-grid animate-fade-in">
         <!-- KPI Cards -->
-        <div class="kpi-card blue">
+        <div class="kpi-card blue" (click)="activeTab = 'inventory'">
           <div class="kpi-icon">
-            <span class="material-icons-outlined">inventory_2</span>
+            <span class="material-icons-outlined">devices</span>
           </div>
           <div class="kpi-info">
-            <span class="kpi-value">{{ products.length }}</span>
-            <span class="kpi-label">Active Products</span>
+            <span class="kpi-value">{{ inventory.length }}</span>
+            <span class="kpi-label">Total Registered Serials</span>
           </div>
         </div>
 
-        <div class="kpi-card green">
+        <div class="kpi-card green" (click)="activeTab = 'inventory'">
           <div class="kpi-icon">
-            <span class="material-icons-outlined">verified_user</span>
+            <span class="material-icons-outlined">verified</span>
           </div>
           <div class="kpi-info">
-            <span class="kpi-value">{{ warranties.length }}</span>
-            <span class="kpi-label">Registered Warranties</span>
+            <span class="kpi-value">{{ inventory.length }}</span>
+            <span class="kpi-label">Active Product Warranties</span>
           </div>
         </div>
 
-        <div class="kpi-card orange">
+        <div class="kpi-card purple" (click)="activeTab = 'parties'">
           <div class="kpi-icon">
-            <span class="material-icons-outlined">engineering</span>
+            <span class="material-icons-outlined">business</span>
           </div>
           <div class="kpi-info">
-            <span class="kpi-value">{{ tickets.length }}</span>
-            <span class="kpi-label">Service Requests</span>
+            <span class="kpi-value">{{ activeDistributorsCount }}</span>
+            <span class="kpi-label">Authorized Distributors</span>
           </div>
         </div>
 
-        <div class="kpi-card purple">
+        <div class="kpi-card orange" (click)="activeTab = 'models'">
           <div class="kpi-icon">
-            <span class="material-icons-outlined">people</span>
+            <span class="material-icons-outlined">category</span>
           </div>
           <div class="kpi-info">
-            <span class="kpi-value">{{ customers.length }}</span>
-            <span class="kpi-label">Total Customers</span>
+            <span class="kpi-value">{{ models.length }}</span>
+            <span class="kpi-label">Product Models</span>
           </div>
         </div>
       </div>
 
-      <!-- Quick Overview Tables -->
+      <!-- Quick Action Callout -->
+      <div class="action-banner-card animate-fade-in">
+        <div class="action-banner-text">
+          <span class="material-icons-outlined banner-star">verified_user</span>
+          <div>
+            <h3>Register Product Serial with Component Specifications & Warranty</h3>
+            <p>Enter Computer, Monitor, TV, Interactive Panel or LED Bulb units with official warranty and customer/dealer assignment.</p>
+          </div>
+        </div>
+        <button class="btn-primary-lg" (click)="openProductEntryModal()">
+          <span class="material-icons-outlined">add_box</span>
+          Register New Serial
+        </button>
+      </div>
+
+      <!-- Overview Tables -->
       <div class="overview-tables animate-fade-in">
         <div class="admin-card">
           <div class="card-header">
-            <h3>Recent Warranties</h3>
-            <button class="btn-action-sm" (click)="activeTab = 'warranties'">View All</button>
+            <h3>Recent Registered Serials & Warranties</h3>
+            <button class="btn-action-sm" (click)="activeTab = 'inventory'">View All Serials</button>
           </div>
           <table class="admin-table">
             <thead>
               <tr>
+                <th>Category</th>
+                <th>Model</th>
                 <th>Serial Number</th>
-                <th>Product</th>
-                <th>Customer</th>
-                <th>Status</th>
+                <th>Assigned Dealer / Partner</th>
+                <th>Warranty Status</th>
               </tr>
             </thead>
             <tbody>
-              @for (item of warranties.slice(0, 3); track item.id) {
+              @for (item of inventory.slice(0, 6); track item.unit_id) {
                 <tr>
-                  <td><code>{{ item.serialNumber }}</code></td>
-                  <td>{{ item.productName }}</td>
-                  <td>{{ item.customerName }}</td>
-                  <td><span class="badge" [class.badge-success]="item.status === 'Active'" [class.badge-danger]="item.status === 'Expired'">{{ item.status }}</span></td>
+                  <td><span class="cat-pill cat-{{ item.category_id }}">{{ item.category_name }}</span></td>
+                  <td><strong>{{ item.model_no }}</strong></td>
+                  <td><code class="code-highlight">{{ item.serial_no }}</code></td>
+                  <td>{{ item.assigned_party_name }}</td>
+                  <td>
+                    <span class="badge badge-success">
+                      <span class="material-icons-outlined" style="font-size: 13px; vertical-align: middle;">verified</span>
+                      Active Warranty
+                    </span>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -144,25 +187,29 @@
 
         <div class="admin-card">
           <div class="card-header">
-            <h3>Recent Service Requests</h3>
-            <button class="btn-action-sm" (click)="activeTab = 'service'">View All</button>
+            <h3>Recent Tax Invoices & Direct Sales</h3>
+            <button class="btn-action-sm" (click)="activeTab = 'invoices'">View All Invoices</button>
           </div>
           <table class="admin-table">
             <thead>
               <tr>
-                <th>Ticket ID</th>
-                <th>Customer</th>
-                <th>Type</th>
-                <th>Status</th>
+                <th>Invoice No</th>
+                <th>Customer / End User</th>
+                <th>District (Zila)</th>
+                <th>Sale Date</th>
+                <th>Warranty Status</th>
               </tr>
             </thead>
             <tbody>
-              @for (ticket of tickets.slice(0, 3); track ticket.id) {
+              @for (inv of invoices.slice(0, 6); track inv.invoice_id) {
                 <tr>
-                  <td><code>{{ ticket.id }}</code></td>
-                  <td>{{ ticket.customerName }}</td>
-                  <td>{{ ticket.type }}</td>
-                  <td><span class="badge" [class.badge-warning]="ticket.status === 'Pending'" [class.badge-primary]="ticket.status === 'In Progress'" [class.badge-success]="ticket.status === 'Completed'">{{ ticket.status }}</span></td>
+                  <td><code>{{ inv.invoice_no }}</code></td>
+                  <td><strong>{{ inv.customer_name }}</strong></td>
+                  <td>{{ inv.zila || 'BILASPUR' }}</td>
+                  <td>{{ inv.invoice_date }}</td>
+                  <td>
+                    <span class="badge badge-success">✓ Active</span>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -171,259 +218,1743 @@
       </div>
     }
 
-    <!-- 2. WARRANTIES TAB -->
-    @if (activeTab === 'warranties') {
+    <!-- 2. PRODUCT SERIALS & WARRANTIES TAB -->
+    @if (activeTab === 'inventory') {
+      <div class="admin-card animate-fade-in">
+        <div class="card-header flex-between">
+          <div>
+            <h2>Product Serial & Warranty Registry</h2>
+            <p>Master directory of registered products, component serial numbers, and warranty terms.</p>
+          </div>
+          <div class="header-tools">
+            <!-- Category Filter -->
+            <select [(ngModel)]="inventoryCategoryFilter" class="filter-select">
+              <option value="ALL">All Categories</option>
+              @for (c of categories; track c.category_id) {
+                <option [value]="c.category_id">{{ c.category_name }}</option>
+              }
+            </select>
+
+            <button class="btn-primary" (click)="openProductEntryModal()">
+              <span class="material-icons-outlined">add</span>
+              + Register Product & Serial
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table inventory-table">
+            <thead>
+              <tr>
+                <th>Category & Model</th>
+                <th>Serial Number</th>
+                <th>Specifications / Components</th>
+                <th>Warranty Term</th>
+                <th>Warranty Status</th>
+                <th>Assigned Dealer / Partner</th>
+                <th>Customer & Ref Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of pagedInventory; track item.unit_id) {
+                <tr>
+                  <td>
+                    <span class="cat-pill cat-{{ item.category_id }}">{{ item.category_name }}</span>
+                    <div class="model-text"><strong>{{ item.model_no }}</strong></div>
+                    <small class="product-sub">{{ item.product_name }}</small>
+                  </td>
+                  <td>
+                    <code class="code-highlight main-serial">{{ item.serial_no }}</code>
+                  </td>
+                  <td class="specs-cell">
+                    <!-- Dynamic Component Specs -->
+                    @if (item.category_id === 1) {
+                      <!-- Computer -->
+                      <div class="spec-tag-list">
+                        <span>CPU: <strong>{{ item.specs.processor }}</strong> ({{ item.specs.processor_sn || 'N/A' }}) <span class="part-warr-badge">{{ item.specs.processor_warr || item.warranty_months }}M</span></span>
+                        <span>MB: {{ item.specs.motherboard_sn }} <span class="part-warr-badge">{{ item.specs.motherboard_warr || item.warranty_months }}M</span></span>
+                        <span>RAM: {{ item.specs.ram_size }} ({{ item.specs.ram_sn }}) <span class="part-warr-badge">{{ item.specs.ram_warr || item.warranty_months }}M</span></span>
+                        <span>SSD: {{ item.specs.ssd_size }} ({{ item.specs.ssd_sn }}) <span class="part-warr-badge">{{ item.specs.ssd_warr || item.warranty_months }}M</span></span>
+                        <span>Cabinet: {{ item.specs.cabinet_sn }} <span class="part-warr-badge">{{ item.specs.cabinet_warr || 12 }}M</span></span>
+                        @if (item.specs.monitor_sn) { <span>Mon SN: {{ item.specs.monitor_sn }} <span class="part-warr-badge">{{ item.specs.monitor_warr || item.warranty_months }}M</span></span> }
+                        @if (item.specs.mouse_sn) { <span>Mouse: {{ item.specs.mouse_sn }} <span class="part-warr-badge">{{ item.specs.mouse_warr || 12 }}M</span></span> }
+                        @if (item.specs.keyboard_sn) { <span>KB: {{ item.specs.keyboard_sn }} <span class="part-warr-badge">{{ item.specs.keyboard_warr || 12 }}M</span></span> }
+                        @if (item.specs.graphic_card_sn) { <span>GPU: {{ item.specs.graphic_card_sn }} <span class="part-warr-badge">{{ item.specs.graphic_card_warr || item.warranty_months }}M</span></span> }
+                      </div>
+                    } @else if (item.category_id === 2) {
+                      <!-- Monitor -->
+                      <div class="spec-tag-list">
+                        <span>Screen Size: <strong>{{ item.specs.screen_size }}</strong></span>
+                        <span>Panel: {{ item.specs.panel_type || 'IPS Full HD' }}</span>
+                      </div>
+                    } @else if (item.category_id === 3) {
+                      <!-- TV -->
+                      <div class="spec-tag-list">
+                        <span>Screen Size: <strong>{{ item.specs.screen_size }}</strong></span>
+                        <span>Motherboard SN: {{ item.specs.motherboard_sn }}</span>
+                      </div>
+                    } @else if (item.category_id === 4) {
+                      <!-- Interactive Panel -->
+                      <div class="spec-tag-list">
+                        <span>RAM/ROM: <strong>{{ item.specs.ram }} / {{ item.specs.rom }}</strong></span>
+                        <span>OPS SN: {{ item.specs.ops_serial }} ({{ item.specs.ops_ram }} / {{ item.specs.ops_rom }})</span>
+                      </div>
+                    } @else if (item.category_id === 5) {
+                      <!-- LED Bulb -->
+                      <div class="spec-tag-list">
+                        <span>Wattage: <strong>{{ item.specs.watt }}</strong></span>
+                        <span>Color: {{ item.specs.color || 'Cool Daylight' }}</span>
+                      </div>
+                    }
+                  </td>
+                  <td>
+                    <span class="warranty-tag">{{ item.warranty_months }} Months</span>
+                  </td>
+                  <td class="status-cell">
+                    @if (item.status === 'SOLD' && item.sale_info?.invoice_no && item.sale_info?.invoice_date) {
+                      <span class="badge badge-success">
+                        <span class="material-icons-outlined" style="font-size: 14px;">verified</span>
+                        Active Warranty
+                      </span>
+                    } @else {
+                      <span class="badge badge-pending">
+                        <span class="material-icons-outlined" style="font-size: 14px;">schedule</span>
+                        Pending Sale
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    <strong>{{ item.assigned_party_name || 'Direct / OEM' }}</strong>
+                    @if (item.sale_info) {
+                      <div class="date-sub">Sold to: {{ item.sale_info.customer_name }} ({{ item.sale_info.zila || 'BILASPUR' }})</div>
+                    }
+                  </td>
+                  <td>
+                    @if (item.sale_info && item.sale_info.invoice_no) {
+                      <div class="sale-box">
+                        <div><strong>Sale Date:</strong> {{ item.sale_info.invoice_date }}</div>
+                        <div>
+                          <strong>Invoice:</strong>
+                          <code title="Locked: Invoice & Sale Date cannot be modified" style="display:inline-flex; align-items:center; gap:2px;">
+                            <span class="material-icons-outlined" style="font-size:11px; color:#475569;">lock</span>
+                            {{ item.sale_info.invoice_no }}
+                          </code>
+                        </div>
+                        <div><strong>Valid Till:</strong> {{ item.sale_info.warranty_end }}</div>
+                      </div>
+                    } @else {
+                      <span class="text-muted-tag" style="background:#fffbeb; color:#92400e; border:1px dashed #fcd34d; padding:3px 8px; border-radius:4px; font-size:11px; display:inline-block;">
+                        Pending Sale (Warranty Not Started)
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Inventory Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredInventory.length ? (inventoryPage - 1) * inventoryPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(inventoryPage * inventoryPageSize, filteredInventory.length) }}</strong>
+              of <strong>{{ filteredInventory.length }}</strong> serials
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="inventoryPageSize" (change)="inventoryPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+          </div>
+          @if (inventoryTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="inventoryPage === 1" (click)="setInventoryPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="inventoryPage === 1" (click)="setInventoryPage(inventoryPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of inventoryPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === inventoryPage" (click)="setInventoryPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="inventoryPage === inventoryTotalPages" (click)="setInventoryPage(inventoryPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="inventoryPage === inventoryTotalPages" (click)="setInventoryPage(inventoryTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 3. PARTIES TAB (mst_party) -->
+    @if (activeTab === 'parties') {
       <div class="admin-card animate-fade-in">
         <div class="card-header">
           <div>
-            <h2>Warranties Directory</h2>
-            <p>Manage product warranties and serial numbers</p>
+            <h2>Master Parties & Distributors Directory</h2>
+            <p>Manage OEM facilities and authorized distributor partners for warranty registration.</p>
           </div>
-          <button class="btn-primary" (click)="showAddWarrantyModal = true">
-            <span class="material-icons-outlined">add</span> Register Warranty
+          <button class="btn-primary" (click)="showPartyModal = true">
+            <span class="material-icons-outlined">add</span> Add Distributor
           </button>
         </div>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Serial Number</th>
-              <th>Product Name</th>
-              <th>Customer</th>
-              <th>Purchase Date</th>
-              <th>Expiry Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (w of filteredWarranties; track w.id) {
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
               <tr>
-                <td>#{{ w.id }}</td>
-                <td><code class="serial-tag">{{ w.serialNumber }}</code></td>
-                <td>{{ w.productName }}</td>
-                <td>{{ w.customerName }}</td>
-                <td>{{ w.purchaseDate }}</td>
-                <td>{{ w.expiryDate }}</td>
-                <td><span class="badge" [class.badge-success]="w.status === 'Active'" [class.badge-danger]="w.status === 'Expired'">{{ w.status }}</span></td>
-                <td>
-                  <button class="icon-btn-delete" (click)="deleteWarranty(w.id)" title="Delete Warranty">
-                    <span class="material-icons-outlined">delete</span>
-                  </button>
-                </td>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Party / Dealer Name</th>
+                <th>GSTIN</th>
+                <th>Contact Person</th>
+                <th>District (Zila)</th>
+                <th>State</th>
+                <th>Status</th>
+                <th>Portal Login & Password</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (p of pagedParties; track p.party_id) {
+                <tr>
+                  <td>#{{ p.party_id }}</td>
+                  <td>
+                    <span class="badge" [class.badge-oem]="p.party_type === 'OEM'" [class.badge-dist]="p.party_type === 'DISTRIBUTOR'">
+                      {{ p.party_type }}
+                    </span>
+                  </td>
+                  <td><strong>{{ p.party_name }}</strong></td>
+                  <td><code>{{ p.gst_no || 'N/A' }}</code></td>
+                  <td>{{ p.contact_person || 'N/A' }}</td>
+                  <td><strong>{{ p.district || 'BILASPUR' }}</strong></td>
+                  <td>{{ p.state || 'Chhattisgarh' }}</td>
+                  <td>
+                    <span class="badge badge-success">Active</span>
+                  </td>
+                  <td>
+                    @if (p.party_type === 'DISTRIBUTOR') {
+                      <button class="btn-manage-cred" (click)="openDistCredModal(p)" title="Set Login ID & Password">
+                        <span class="material-icons-outlined">vpn_key</span>
+                        <span>Manage Login</span>
+                      </button>
+                    } @else {
+                      <span class="text-muted-tag">OEM Admin</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Parties Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredParties.length ? (partiesPage - 1) * partiesPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(partiesPage * partiesPageSize, filteredParties.length) }}</strong>
+              of <strong>{{ filteredParties.length }}</strong> parties
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="partiesPageSize" (change)="partiesPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          @if (partiesTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="partiesPage === 1" (click)="setPartiesPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="partiesPage === 1" (click)="setPartiesPage(partiesPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of partiesPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === partiesPage" (click)="setPartiesPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="partiesPage === partiesTotalPages" (click)="setPartiesPage(partiesPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="partiesPage === partiesTotalPages" (click)="setPartiesPage(partiesTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
       </div>
     }
 
-    <!-- 3. PRODUCTS TAB -->
-    @if (activeTab === 'products') {
+    <!-- 4. MODELS TAB (mst_product_model) -->
+    @if (activeTab === 'models') {
       <div class="admin-card animate-fade-in">
         <div class="card-header">
           <div>
-            <h2>Product Catalog Manager</h2>
-            <p>Manage water purifiers and pricing</p>
+            <h2>Product Models & Warranty Durations</h2>
+            <p>Configure model numbers, standard warranty terms, and specifications.</p>
           </div>
-          <button class="btn-primary" (click)="showAddProductModal = true">
-            <span class="material-icons-outlined">add</span> Add New Product
+          <button class="btn-primary" (click)="showModelModal = true">
+            <span class="material-icons-outlined">add</span> Add New Model
           </button>
         </div>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>Price (₹)</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of filteredProducts; track p.id) {
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
               <tr>
-                <td><code>{{ p.code }}</code></td>
-                <td class="font-bold">{{ p.name }}</td>
-                <td>{{ p.category }}</td>
-                <td>₹{{ p.price | number }}</td>
-                <td><span class="badge badge-success">{{ p.status }}</span></td>
-                <td>
-                  <button class="icon-btn-delete" (click)="deleteProduct(p.id)" title="Delete Product">
-                    <span class="material-icons-outlined">delete</span>
-                  </button>
-                </td>
+                <th>Model ID</th>
+                <th>Category</th>
+                <th>Model Number</th>
+                <th>Product Description</th>
+                <th>Default Warranty</th>
+                <th>Status</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (m of pagedModels; track m.model_id) {
+                <tr>
+                  <td>#{{ m.model_id }}</td>
+                  <td><span class="cat-pill cat-{{ m.category_id }}">{{ m.category_name }}</span></td>
+                  <td><code>{{ m.model_no }}</code></td>
+                  <td><strong>{{ m.product_name }}</strong></td>
+                  <td><strong>{{ m.warranty_month }} Months</strong></td>
+                  <td><span class="badge badge-success">Active</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Models Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredModels.length ? (modelsPage - 1) * modelsPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(modelsPage * modelsPageSize, filteredModels.length) }}</strong>
+              of <strong>{{ filteredModels.length }}</strong> models
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="modelsPageSize" (change)="modelsPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          @if (modelsTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="modelsPage === 1" (click)="setModelsPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="modelsPage === 1" (click)="setModelsPage(modelsPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of modelsPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === modelsPage" (click)="setModelsPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="modelsPage === modelsTotalPages" (click)="setModelsPage(modelsPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="modelsPage === modelsTotalPages" (click)="setModelsPage(modelsTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
       </div>
     }
 
-    <!-- 4. SERVICE TICKETS TAB -->
-    @if (activeTab === 'service') {
+    <!-- 5. SALES & DISPATCHES TAB (NO INVOICE GENERATED) -->
+    @if (activeTab === 'invoices') {
       <div class="admin-card animate-fade-in">
         <div class="card-header">
           <div>
-            <h2>Service Tickets & Repairs</h2>
-            <p>Track and update customer service bookings</p>
+            <h2>Customer Sales & Warranty Records</h2>
+            <p>Outward sales and warranty activations logged by dealers and OEM (No invoices generated by this portal).</p>
           </div>
         </div>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Ticket ID</th>
-              <th>Customer</th>
-              <th>Serial Number</th>
-              <th>Service Type</th>
-              <th>Scheduled Date</th>
-              <th>Status</th>
-              <th>Update Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (t of filteredTickets; track t.id) {
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
               <tr>
-                <td><code>{{ t.id }}</code></td>
-                <td>{{ t.customerName }}</td>
-                <td><code>{{ t.serialNumber }}</code></td>
-                <td>{{ t.type }}</td>
-                <td>{{ t.scheduledDate }}</td>
-                <td><span class="badge" [class.badge-warning]="t.status === 'Pending'" [class.badge-primary]="t.status === 'In Progress'" [class.badge-success]="t.status === 'Completed'">{{ t.status }}</span></td>
-                <td>
-                  <select [ngModel]="t.status" (ngModelChange)="updateTicketStatus(t, $event)" class="select-status">
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </td>
+                <th>Bill / Ref No (External)</th>
+                <th>Seller Party</th>
+                <th>End User / Customer Name</th>
+                <th>District (Zila)</th>
+                <th>Sale Type</th>
+                <th>Sale Date</th>
+                <th>Quantity</th>
+                <th>Warranty Status</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (inv of pagedInvoices; track inv.invoice_id) {
+                <tr>
+                  <td><code class="code-highlight">{{ inv.invoice_no || 'N/A' }}</code></td>
+                  <td>{{ inv.seller_party_name }}</td>
+                  <td><strong>{{ inv.customer_name }}</strong></td>
+                  <td><strong>{{ inv.zila || 'BILASPUR' }}</strong></td>
+                  <td>
+                    <span class="badge" [class.badge-dist]="inv.sale_type === 'DISTRIBUTOR'" [class.badge-oem]="inv.sale_type === 'DIRECT'">
+                      {{ inv.sale_type }}
+                    </span>
+                  </td>
+                  <td>{{ inv.invoice_date }}</td>
+                  <td>{{ inv.total_qty }} Unit(s)</td>
+                  <td>
+                    <span class="badge badge-success">✓ Active Warranty</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Invoices Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredInvoices.length ? (invoicesPage - 1) * invoicesPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(invoicesPage * invoicesPageSize, filteredInvoices.length) }}</strong>
+              of <strong>{{ filteredInvoices.length }}</strong> records
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="invoicesPageSize" (change)="invoicesPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          @if (invoicesTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="invoicesPage === 1" (click)="setInvoicesPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="invoicesPage === 1" (click)="setInvoicesPage(invoicesPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of invoicesPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === invoicesPage" (click)="setInvoicesPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="invoicesPage === invoicesTotalPages" (click)="setInvoicesPage(invoicesPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="invoicesPage === invoicesTotalPages" (click)="setInvoicesPage(invoicesTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
       </div>
     }
 
-    <!-- 5. CUSTOMERS TAB -->
+    <!-- 6. CUSTOMERS TAB -->
     @if (activeTab === 'customers') {
       <div class="admin-card animate-fade-in">
         <div class="card-header">
           <div>
-            <h2>Customer Directory</h2>
-            <p>Registered customer profile details</p>
+            <h2>Registered Customers & Departments</h2>
+            <p>Institutional clients, government departments, and end consumers.</p>
           </div>
+          <button class="btn-primary" (click)="showCustomerModal = true">
+            <span class="material-icons-outlined">add</span> Add Customer
+          </button>
         </div>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Customer Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>City</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (c of customers; track c.id) {
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
               <tr>
-                <td>#{{ c.id }}</td>
-                <td class="font-bold">{{ c.name }}</td>
-                <td>{{ c.email }}</td>
-                <td>{{ c.phone }}</td>
-                <td>{{ c.city }}</td>
+                <th>ID</th>
+                <th>Customer / Department Name</th>
+                <th>Department</th>
+                <th>Contact Person</th>
+                <th>Mobile</th>
+                <th>District (Zila)</th>
+                <th>State</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (c of pagedCustomers; track c.customer_id) {
+                <tr>
+                  <td>#{{ c.customer_id }}</td>
+                  <td><strong>{{ c.customer_name }}</strong></td>
+                  <td>{{ c.department || 'General' }}</td>
+                  <td>{{ c.contact_person || 'N/A' }}</td>
+                  <td>{{ c.mobile || 'N/A' }}</td>
+                  <td><strong>{{ c.district || 'BILASPUR' }}</strong></td>
+                  <td>{{ c.state || 'Chhattisgarh' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Customers Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredCustomers.length ? (customersPage - 1) * customersPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(customersPage * customersPageSize, filteredCustomers.length) }}</strong>
+              of <strong>{{ filteredCustomers.length }}</strong> customers
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="customersPageSize" (change)="customersPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          @if (customersTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="customersPage === 1" (click)="setCustomersPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="customersPage === 1" (click)="setCustomersPage(customersPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of customersPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === customersPage" (click)="setCustomersPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="customersPage === customersTotalPages" (click)="setCustomersPage(customersPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="customersPage === customersTotalPages" (click)="setCustomersPage(customersTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 7. SUB-USERS & LOGINS TAB -->
+    @if (activeTab === 'users') {
+      <div class="admin-card animate-fade-in">
+        <!-- Sub-Users & Distributor Logins Section -->
+        <div class="card-header">
+          <div>
+            <h2>Sub-Users & Logins Management</h2>
+            <p>Create and manage authorized login accounts with <strong>Sub-User</strong> or <strong>Distributor</strong> roles.</p>
+          </div>
+          <button class="btn-primary" (click)="openCreateSubUserModal()">
+            <span class="material-icons-outlined">person_add</span> + Add Sub-User / Distributor
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User Name & Login ID</th>
+                <th>Contact Info</th>
+                <th>Assigned Role</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of pagedSubUsers; track u.user_id) {
+                <tr>
+                  <td>#{{ u.user_id }}</td>
+                  <td>
+                    <div class="subuser-name-cell">
+                      <div class="subuser-avatar">
+                        <span class="material-icons-outlined">{{ u.role === 'DISTRIBUTOR' ? 'storefront' : 'badge' }}</span>
+                      </div>
+                      <div>
+                        <strong>{{ u.display_name }}</strong>
+                        <div class="subuser-login-id">
+                          <span class="material-icons-outlined">alternate_email</span>
+                          <code>{{ u.username }}</code>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div><span class="material-icons-outlined small-icon">email</span> {{ u.email || 'N/A' }}</div>
+                    <div><span class="material-icons-outlined small-icon">phone</span> {{ u.mobile || 'N/A' }}</div>
+                  </td>
+                  <td>
+                    <span class="role-badge" [class.role-distributor]="u.role === 'DISTRIBUTOR'" [class.role-sub_user]="u.role !== 'DISTRIBUTOR'">
+                      {{ u.role === 'DISTRIBUTOR' ? 'Distributor' : 'Sub-User' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="u.status === 1" [class.badge-expired]="u.status === 0">
+                      {{ u.status === 1 ? 'Active' : 'Disabled' }}
+                    </span>
+                  </td>
+                  <td>{{ u.created_at ? (u.created_at | date:'mediumDate') : 'Active' }}</td>
+                  <td>
+                    <div class="table-actions-inline">
+                      <button class="btn-action-edit" (click)="openEditSubUserModal(u)" title="Edit User Credentials">
+                        <span class="material-icons-outlined">edit</span>
+                      </button>
+                      <button class="btn-action-delete" (click)="deleteSubUser(u.user_id)" title="Delete Account">
+                        <span class="material-icons-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sub-Users Pagination Bar -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            <span>
+              Showing <strong>{{ filteredSubUsers.length ? (subUsersPage - 1) * subUsersPageSize + 1 : 0 }}</strong>
+              to <strong>{{ Math.min(subUsersPage * subUsersPageSize, filteredSubUsers.length) }}</strong>
+              of <strong>{{ filteredSubUsers.length }}</strong> users
+            </span>
+            <div class="page-size-selector">
+              <label>Per page:</label>
+              <select [(ngModel)]="subUsersPageSize" (change)="subUsersPage = 1" class="page-size-select">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          @if (subUsersTotalPages > 1) {
+            <div class="pagination-controls">
+              <button class="btn-page-nav" [disabled]="subUsersPage === 1" (click)="setSubUsersPage(1)" title="First Page">
+                <span class="material-icons-outlined">first_page</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="subUsersPage === 1" (click)="setSubUsersPage(subUsersPage - 1)" title="Previous Page">
+                <span class="material-icons-outlined">chevron_left</span>
+              </button>
+              @for (p of subUsersPagesArray; track p) {
+                <button class="btn-page-num" [class.active]="p === subUsersPage" (click)="setSubUsersPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button class="btn-page-nav" [disabled]="subUsersPage === subUsersTotalPages" (click)="setSubUsersPage(subUsersPage + 1)" title="Next Page">
+                <span class="material-icons-outlined">chevron_right</span>
+              </button>
+              <button class="btn-page-nav" [disabled]="subUsersPage === subUsersTotalPages" (click)="setSubUsersPage(subUsersTotalPages)" title="Last Page">
+                <span class="material-icons-outlined">last_page</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Section 2: Distributor Logins Overview -->
+        <div class="distributor-logins-section">
+          <div class="section-sub-header">
+            <div>
+              <h3>Authorized Distributors Login Directory</h3>
+              <p>Direct login credentials for registered dealer self-access on the Distributor Portal.</p>
+            </div>
+            <button class="btn-outline-primary" (click)="activeTab = 'parties'">
+              <span class="material-icons-outlined">storefront</span> View All Dealers
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table dist-login-table">
+              <thead>
+                <tr>
+                  <th>Dealer Name</th>
+                  <th>District</th>
+                  <th>Primary Login ID (Mobile)</th>
+                  <th>GSTIN Username</th>
+                  <th>Password Status</th>
+                  <th>Account Status</th>
+                  <th>Manage Password</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of parties; track d.party_id) {
+                  @if (d.party_type === 'DISTRIBUTOR') {
+                    <tr>
+                      <td><strong>{{ d.party_name }}</strong></td>
+                      <td>{{ d.district }}</td>
+                      <td>
+                        <code class="login-id-code">{{ d.mobile }}</code>
+                      </td>
+                      <td><code>{{ d.gst_no }}</code></td>
+                      <td>
+                        <span class="password-set-badge">
+                          <span class="material-icons-outlined">check</span> Set & Active
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-success">Active</span>
+                      </td>
+                      <td>
+                        <button class="btn-manage-cred" (click)="openDistCredModal(d)">
+                          <span class="material-icons-outlined">vpn_key</span> Set Password
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     }
   </div>
 
-  <!-- MODAL: Add Warranty -->
-  @if (showAddWarrantyModal) {
-    <div class="modal-overlay">
-      <div class="modal-card">
+  <!-- ==================================================== -->
+  <!-- MODAL: MULTI-PRODUCT ENTRY & ALLOCATION / DIRECT SALE -->
+  <!-- ==================================================== -->
+  @if (showProductEntryModal) {
+    <div class="modal-overlay" (click)="showProductEntryModal = false">
+      <div class="modal-card product-entry-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>Register New Warranty</h3>
-          <button (click)="showAddWarrantyModal = false" class="close-btn">&times;</button>
+          <div class="modal-title-row">
+            <span class="material-icons-outlined modal-icon">add_to_photos</span>
+            <div>
+              <h3>Product Entry with Component Specs & Warranty</h3>
+              <p>Add Computer, Monitor, TV, Interactive Panel, or LED Bulb & allocate or sell directly</p>
+            </div>
+          </div>
+          <button (click)="showProductEntryModal = false" class="close-btn">&times;</button>
         </div>
-        <form (ngSubmit)="addWarranty()">
-          <div class="form-group">
-            <label>Serial Number *</label>
-            <input type="text" [(ngModel)]="newWarranty.serialNumber" name="sn" placeholder="e.g. MWC-55555" required />
+
+        <!-- Feedback alerts -->
+        @if (entrySuccessMessage) {
+          <div class="modal-alert-success">
+            <span class="material-icons-outlined">check_circle</span>
+            {{ entrySuccessMessage }}
           </div>
-          <div class="form-group">
-            <label>Customer Name *</label>
-            <input type="text" [(ngModel)]="newWarranty.customerName" name="cn" placeholder="Customer Name" required />
+        }
+        @if (entryErrorMessage) {
+          <div class="modal-alert-error">
+            <span class="material-icons-outlined">error</span>
+            {{ entryErrorMessage }}
           </div>
-          <div class="form-group">
-            <label>Product Name</label>
-            <select [(ngModel)]="newWarranty.productName" name="pn">
-              @for (p of products; track p.id) {
-                <option [value]="p.name">{{ p.name }}</option>
+        }
+
+        <form (ngSubmit)="submitProductEntry()" class="entry-form-body">
+          <!-- Step 1: Category & Model Selection -->
+          <div class="form-section-title">
+            <span class="step-num">1</span>
+            <h4>Select Product Category & Model</h4>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Product Category *</label>
+              <select [(ngModel)]="newProductEntry.category_id" name="entryCategory" (change)="onCategorySelectChange()" class="form-select">
+                @for (c of categories; track c.category_id) {
+                  <option [value]="c.category_id">{{ c.category_name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Model Number *</label>
+              <input type="text" [(ngModel)]="newProductEntry.model_no" name="entryModelNo" placeholder="e.g. IN22-0125DS" required />
+            </div>
+
+            <div class="form-group">
+              <label>Product Title</label>
+              <input type="text" [(ngModel)]="newProductEntry.product_name" name="entryProductName" placeholder="e.g. INVO Desktop i3 12th Gen" />
+            </div>
+          </div>
+
+          <!-- Step 2: Main Serial Number & Warranty Months -->
+          <div class="form-section-title">
+            <span class="step-num">2</span>
+            <h4>Unit Serial Number & Warranty Duration</h4>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group flex-2">
+              <label>Product Serial Number (Unique) *</label>
+              <input
+                type="text"
+                [(ngModel)]="newProductEntry.serial_no"
+                name="entrySerialNo"
+                placeholder="e.g. IN22135001 or 910072508000BC"
+                required
+                class="highlight-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Warranty Duration (Months) *</label>
+              <select [(ngModel)]="newProductEntry.warranty_months" name="entryWarrantyMonths" class="form-select">
+                <option [value]="12">12 Months (1 Year)</option>
+                <option [value]="24">24 Months (2 Years)</option>
+                <option [value]="36">36 Months (3 Years)</option>
+                <option [value]="60">60 Months (5 Years)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 3: Dynamic Category-Specific Component Specifications & Individual Warranty -->
+          <div class="form-section-title">
+            <span class="step-num">3</span>
+            <h4>Component Specifications & Individual Part Warranty</h4>
+          </div>
+
+          <!-- CATEGORY 1: COMPUTER -->
+          @if (newProductEntry.category_id == 1) {
+            <!-- Batch Warranty Toolbar -->
+            <div class="parts-batch-bar animate-fade-in">
+              <div class="batch-bar-left">
+                <span class="material-icons-outlined batch-icon">verified</span>
+                <strong>Individual Part Warranty Period:</strong>
+                <span class="batch-sub">Set separate warranty for each component below, or quick-apply to all:</span>
+              </div>
+              <div class="batch-bar-buttons">
+                <button type="button" class="btn-batch-pill" [class.btn-batch-active]="selectedBatchWarranty === 12" (click)="applyWarrantyToAllComponents(12)">Set All 12 Mo (1 Yr)</button>
+                <button type="button" class="btn-batch-pill" [class.btn-batch-active]="selectedBatchWarranty === 24" (click)="applyWarrantyToAllComponents(24)">Set All 24 Mo (2 Yrs)</button>
+                <button type="button" class="btn-batch-pill" [class.btn-batch-active]="selectedBatchWarranty === 36" (click)="applyWarrantyToAllComponents(36)">Set All 36 Mo (3 Yrs)</button>
+                <button type="button" class="btn-batch-pill" [class.btn-batch-active]="selectedBatchWarranty === 60" (click)="applyWarrantyToAllComponents(60)">Set All 60 Mo (5 Yrs)</button>
+              </div>
+            </div>
+
+            <div class="parts-cards-container animate-fade-in">
+              <!-- 1. Motherboard -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">developer_board</span>
+                    <span>Motherboard</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.motherboard_warr" name="mbWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Motherboard Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.motherboard_sn" name="compMB" placeholder="e.g. H61M1112C09S4874" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Processor (CPU) -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">memory</span>
+                    <span>Processor (CPU)</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.processor_warr" name="cpuWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group">
+                    <label>Processor Model</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.processor" name="compProcessor" placeholder="e.g. i3 12th gen / i5 12400" />
+                  </div>
+                  <div class="form-group">
+                    <label>Processor Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.processor_sn" name="compProcessorSn" placeholder="e.g. U6692PF301300" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. RAM Memory -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">storage</span>
+                    <span>RAM Memory</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.ram_warr" name="ramWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.ram_size" name="compRamGb" placeholder="16 GB" />
+                  </div>
+                  <div class="form-group flex-2">
+                    <label>RAM Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.ram_sn" name="compRamSn" placeholder="e.g. 12050063" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Solid State Drive (SSD) -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">save</span>
+                    <span>Solid State Drive (SSD)</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.ssd_warr" name="ssdWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.ssd_size" name="compSsdGb" placeholder="512 GB" />
+                  </div>
+                  <div class="form-group flex-2">
+                    <label>SSD Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.ssd_sn" name="compSsdSn" placeholder="e.g. 12050043" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Cabinet & SMPS -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">desktop_windows</span>
+                    <span>Cabinet & Power Supply</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.cabinet_warr" name="cabinetWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Cabinet Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.cabinet_sn" name="compCabinet" placeholder="e.g. CX90917212" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Monitor Screen -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">tv</span>
+                    <span>Monitor Screen</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.monitor_warr" name="monWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Monitor Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.monitor_sn" name="compMonitorSn" placeholder="e.g. 910072508000BC" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7. Keyboard -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">keyboard</span>
+                    <span>Keyboard</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.keyboard_warr" name="kbWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Keyboard Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.keyboard_sn" name="compKbSn" placeholder="e.g. 250001" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Mouse -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">mouse</span>
+                    <span>Optical Mouse</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.mouse_warr" name="mouseWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Mouse Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.mouse_sn" name="compMouseSn" placeholder="e.g. 500001" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 9. Graphic Card (GPU) -->
+              <div class="part-card">
+                <div class="part-card-header">
+                  <div class="part-title">
+                    <span class="material-icons-outlined">videogame_asset</span>
+                    <span>Graphic Card (GPU)</span>
+                  </div>
+                  <div class="part-warranty-box">
+                    <label>Warranty:</label>
+                    <select [(ngModel)]="newProductEntry.specs.graphic_card_warr" name="gpuWarr" class="part-warr-select">
+                      <option [value]="12">12 Mo (1 Yr)</option>
+                      <option [value]="24">24 Mo (2 Yrs)</option>
+                      <option [value]="36">36 Mo (3 Yrs)</option>
+                      <option [value]="60">60 Mo (5 Yrs)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="part-fields-row">
+                  <div class="form-group flex-full">
+                    <label>Graphic Card Serial No.</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.graphic_card_sn" name="compGpuSn" placeholder="e.g. ZAK11PV01704" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- CATEGORY 2: MONITOR -->
+          @if (newProductEntry.category_id == 2) {
+            <div class="specs-grid animate-fade-in">
+              <div class="form-group">
+                <label>Monitor Size *</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.screen_size" name="monSize" placeholder="e.g. 21&quot; or 24&quot;" />
+              </div>
+              <div class="form-group">
+                <label>Panel Type</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.panel_type" name="monPanel" placeholder="e.g. IPS Full HD Borderless" />
+              </div>
+            </div>
+          }
+
+          <!-- CATEGORY 3: TV -->
+          @if (newProductEntry.category_id == 3) {
+            <div class="specs-grid animate-fade-in">
+              <div class="form-group">
+                <label>Screen Size *</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.tv_screen_size" name="tvSize" placeholder="e.g. 32&quot; or 43&quot;" />
+              </div>
+              <div class="form-group">
+                <label>Motherboard Serial No. *</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.tv_motherboard_sn" name="tvMb" placeholder="e.g. EBT67356202" />
+              </div>
+            </div>
+          }
+
+          <!-- CATEGORY 4: INTERACTIVE PANEL -->
+          @if (newProductEntry.category_id == 4) {
+            <div class="specs-grid animate-fade-in">
+              <div class="form-group">
+                <label>Panel RAM</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.panel_ram" name="pnlRam" placeholder="8 GB" />
+              </div>
+              <div class="form-group">
+                <label>Panel ROM</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.panel_rom" name="pnlRom" placeholder="64 GB" />
+              </div>
+              <div class="form-group">
+                <label>OPS Serial No. *</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.ops_serial" name="pnlOpsSn" placeholder="e.g. 530001" />
+              </div>
+              <div class="form-group">
+                <label>OPS RAM</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.ops_ram" name="pnlOpsRam" placeholder="8 GB" />
+              </div>
+              <div class="form-group">
+                <label>OPS ROM</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.ops_rom" name="pnlOpsRom" placeholder="512 GB" />
+              </div>
+            </div>
+          }
+
+          <!-- CATEGORY 5: LED BULB -->
+          @if (newProductEntry.category_id == 5) {
+            <div class="specs-grid animate-fade-in">
+              <div class="form-group">
+                <label>Wattage (WAT) *</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.watt" name="bulbWatt" placeholder="e.g. 60W or 9W" />
+              </div>
+              <div class="form-group">
+                <label>Light Color</label>
+                <input type="text" [(ngModel)]="newProductEntry.specs.color" name="bulbColor" placeholder="Cool Daylight 6500K" />
+              </div>
+            </div>
+          }
+
+              <!-- Step 4: Dealer Allocation vs Direct Customer Sale -->
+              <div class="form-section-title">
+                <span class="step-num">4</span>
+                <h4>Product Destination & Warranty Activation</h4>
+              </div>
+
+              <div class="form-group">
+                <label>Allocation / Sale Type *</label>
+                <div class="action-toggle-group">
+                  <label class="action-toggle-option" [class.active]="newProductEntry.action === 'ALLOCATE'">
+                    <input type="radio" [(ngModel)]="newProductEntry.action" name="entryAction" value="ALLOCATE" />
+                    <span class="material-icons-outlined">store</span>
+                    <div>
+                      <strong>Allocate to Dealer / Distributor</strong>
+                      <small>Unit dispatched to dealer stock (Pending Sale). Warranty does NOT start yet.</small>
+                    </div>
+                  </label>
+                  <label class="action-toggle-option" [class.active]="newProductEntry.action === 'DIRECT_SALE'">
+                    <input type="radio" [(ngModel)]="newProductEntry.action" name="entryAction" value="DIRECT_SALE" />
+                    <span class="material-icons-outlined">point_of_sale</span>
+                    <div>
+                      <strong>Direct Sale to End Customer</strong>
+                      <small>Sold directly by OEM. Warranty starts immediately from customer Sale Date.</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Option A: Dealer Allocation -->
+              @if (newProductEntry.action === 'ALLOCATE') {
+                <div class="form-row-grid animate-fade-in">
+                  <div class="form-group">
+                    <label>Assign to Authorized Dealer *</label>
+                    <select [(ngModel)]="newProductEntry.to_party_id" name="entryToParty" class="form-select">
+                      @for (p of parties; track p.party_id) {
+                        @if (p.party_type === 'DISTRIBUTOR') {
+                          <option [value]="p.party_id">{{ p.party_name }} ({{ p.district || 'BILASPUR' }})</option>
+                        }
+                      }
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Stock Dispatch Date *</label>
+                    <input type="date" [(ngModel)]="newProductEntry.dispatch_date" name="entryDispatchDate" required />
+                  </div>
+                </div>
+
+                <div class="warranty-rule-alert amber animate-fade-in">
+                  <span class="material-icons-outlined">info</span>
+                  <div>
+                    <strong>Warranty Rule:</strong> This product's warranty will <strong>NOT</strong> start now. It remains in <em>Pending Sale</em> status. The warranty coverage will only start when the dealer sells the unit to an end customer and enters the Customer Invoice Number and Sale Date.
+                  </div>
+                </div>
               }
+
+              <!-- Option B: Direct Customer Sale -->
+              @if (newProductEntry.action === 'DIRECT_SALE') {
+                <div class="animate-fade-in">
+                  <div class="form-row-grid">
+                    <div class="form-group">
+                      <label>End Customer / Department Name *</label>
+                      <input type="text" [(ngModel)]="newProductEntry.customer_name" name="entryCustName" placeholder="e.g. AC TRIBLE DIPARTMENT" required />
+                    </div>
+
+                    <div class="form-group">
+                      <label>District (Zila) *</label>
+                      <input type="text" [(ngModel)]="newProductEntry.zila" name="entryZila" placeholder="BILASPUR" required />
+                    </div>
+                  </div>
+
+                  <div class="form-row-grid">
+                    <div class="form-group">
+                      <label>Customer Tax Invoice Number * (Mandatory for Warranty)</label>
+                      <input type="text" [(ngModel)]="newProductEntry.invoice_no" name="entryInvNo" placeholder="e.g. INV-2026-9001" required />
+                    </div>
+
+                    <div class="form-group">
+                      <label>Customer Sale Date * (Warranty Starts from this Date)</label>
+                      <input type="date" [(ngModel)]="newProductEntry.invoice_date" name="entryInvDate" required />
+                    </div>
+                  </div>
+
+                  <div class="warranty-rule-alert green animate-fade-in">
+                    <span class="material-icons-outlined">verified</span>
+                    <div>
+                      <strong>Warranty Active from Sale Date:</strong> Warranty will be calculated strictly from the Sale Date entered above for {{ newProductEntry.warranty_months }} months.
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <div class="modal-actions-bar">
+                <button type="button" class="btn-secondary" (click)="showProductEntryModal = false">Cancel</button>
+                <button type="submit" class="btn-primary-submit">
+                  <span class="material-icons-outlined">
+                    {{ newProductEntry.action === 'DIRECT_SALE' ? 'verified' : 'send' }}
+                  </span>
+                  {{ newProductEntry.action === 'DIRECT_SALE' ? 'Save Direct Sale & Activate Warranty' : 'Save & Allocate to Dealer (Pending Sale)' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+  <!-- MODAL: ADD PARTY -->
+  @if (showPartyModal) {
+    <div class="modal-overlay" (click)="showPartyModal = false">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Add New Distributor / Party</h3>
+          <button (click)="showPartyModal = false" class="close-btn">&times;</button>
+        </div>
+        <form (ngSubmit)="addParty()">
+          <div class="form-group">
+            <label>Party Type *</label>
+            <select [(ngModel)]="newParty.party_type" name="pType" class="form-select">
+              <option value="DISTRIBUTOR">DISTRIBUTOR</option>
+              <option value="OEM">OEM</option>
             </select>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Purchase Date</label>
-              <input type="date" [(ngModel)]="newWarranty.purchaseDate" name="pd" />
-            </div>
-            <div class="form-group">
-              <label>Expiry Date</label>
-              <input type="date" [(ngModel)]="newWarranty.expiryDate" name="ed" />
-            </div>
+          <div class="form-group">
+            <label>Party / Dealer Name *</label>
+            <input type="text" [(ngModel)]="newParty.party_name" name="pName" placeholder="e.g. Bilaspur Infotech" required />
+          </div>
+          <div class="form-group">
+            <label>GSTIN</label>
+            <input type="text" [(ngModel)]="newParty.gst_no" name="pGst" placeholder="22AABCI1234F1Z8" />
+          </div>
+          <div class="form-group">
+            <label>Contact Person</label>
+            <input type="text" [(ngModel)]="newParty.contact_person" name="pContact" placeholder="Contact Person" />
+          </div>
+          <div class="form-group">
+            <label>District (Zila)</label>
+            <input type="text" [(ngModel)]="newParty.district" name="pDist" placeholder="BILASPUR" />
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="showAddWarrantyModal = false">Cancel</button>
-            <button type="submit" class="btn-primary">Save Warranty</button>
+            <button type="button" class="btn-secondary" (click)="showPartyModal = false">Cancel</button>
+            <button type="submit" class="btn-primary">Save Party</button>
           </div>
         </form>
       </div>
     </div>
   }
 
-  <!-- MODAL: Add Product -->
-  @if (showAddProductModal) {
-    <div class="modal-overlay">
-      <div class="modal-card">
+  <!-- MODAL: ADD MODEL -->
+  @if (showModelModal) {
+    <div class="modal-overlay" (click)="showModelModal = false">
+      <div class="modal-card" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>Add New Product</h3>
-          <button (click)="showAddProductModal = false" class="close-btn">&times;</button>
+          <h3>Add Product Model</h3>
+          <button (click)="showModelModal = false" class="close-btn">&times;</button>
         </div>
-        <form (ngSubmit)="addProduct()">
+        <form (ngSubmit)="addModel()">
           <div class="form-group">
-            <label>Product Code *</label>
-            <input type="text" [(ngModel)]="newProduct.code" name="pc" placeholder="e.g. MWC-PRO100" required />
-          </div>
-          <div class="form-group">
-            <label>Product Name *</label>
-            <input type="text" [(ngModel)]="newProduct.name" name="pn" placeholder="e.g. MWC UltraFlow 900" required />
-          </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select [(ngModel)]="newProduct.category" name="cat">
-              <option value="RO Water Purifier">RO Water Purifier</option>
-              <option value="UV Water Purifier">UV Water Purifier</option>
-              <option value="RO+UV+UF Purifier">RO+UV+UF Purifier</option>
-              <option value="Commercial Purifier">Commercial Purifier</option>
+            <label>Category *</label>
+            <select [(ngModel)]="newModel.category_id" name="mCat" class="form-select">
+              @for (c of categories; track c.category_id) {
+                <option [value]="c.category_id">{{ c.category_name }}</option>
+              }
             </select>
           </div>
           <div class="form-group">
-            <label>Price (₹)</label>
-            <input type="number" [(ngModel)]="newProduct.price" name="pr" placeholder="15999" />
+            <label>Model Number *</label>
+            <input type="text" [(ngModel)]="newModel.model_no" name="mNo" placeholder="e.g. IN22-0125DS" required />
+          </div>
+          <div class="form-group">
+            <label>Product Title *</label>
+            <input type="text" [(ngModel)]="newModel.product_name" name="mName" placeholder="e.g. INVO Desktop i3 12th Gen" required />
+          </div>
+          <div class="form-group">
+            <label>Warranty (Months) *</label>
+            <input type="number" [(ngModel)]="newModel.warranty_month" name="mWarr" placeholder="36" required />
           </div>
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="showAddProductModal = false">Cancel</button>
-            <button type="submit" class="btn-primary">Create Product</button>
+            <button type="button" class="btn-secondary" (click)="showModelModal = false">Cancel</button>
+            <button type="submit" class="btn-primary">Save Model</button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+
+
+  <!-- MODAL: ADD CUSTOMER -->
+  @if (showCustomerModal) {
+    <div class="modal-overlay" (click)="showCustomerModal = false">
+      <div class="modal-card customer-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <span class="material-icons-outlined modal-icon">person_add</span>
+            <div>
+              <h3>Add New Customer / Department</h3>
+              <p>Register government departments, institutions, or retail end consumers</p>
+            </div>
+          </div>
+          <button (click)="showCustomerModal = false" class="close-btn">&times;</button>
+        </div>
+
+        <form (ngSubmit)="addCustomer()" class="entry-form-body">
+          <div class="form-group">
+            <label>Customer / Department Name *</label>
+            <input type="text" [(ngModel)]="newCustomer.customer_name" name="cName" placeholder="e.g. AC TRIBLE DIPARTMENT" required />
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Department / Wing</label>
+              <input type="text" [(ngModel)]="newCustomer.department" name="cDept" placeholder="e.g. Tribal Welfare Dept" />
+            </div>
+            <div class="form-group">
+              <label>Contact Person</label>
+              <input type="text" [(ngModel)]="newCustomer.contact_person" name="cPerson" placeholder="e.g. Project Officer" />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="tel" [(ngModel)]="newCustomer.mobile" name="cMobile" placeholder="9827110002" />
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" [(ngModel)]="newCustomer.email" name="cEmail" placeholder="dept@cg.gov.in" />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>District (Zila) *</label>
+              <input type="text" [(ngModel)]="newCustomer.district" name="cDist" placeholder="BILASPUR" required />
+            </div>
+            <div class="form-group">
+              <label>State *</label>
+              <input type="text" [(ngModel)]="newCustomer.state" name="cState" placeholder="Chhattisgarh" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Address / Location</label>
+            <input type="text" [(ngModel)]="newCustomer.address" name="cAddr" placeholder="e.g. Collectorate Parisar, Bilaspur" />
+          </div>
+
+          <div class="modal-actions-bar">
+            <button type="button" class="btn-secondary" (click)="showCustomerModal = false">Cancel</button>
+            <button type="submit" class="btn-primary-submit">
+              <span class="material-icons-outlined">save</span>
+              Save Customer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: LOGOUT CONFIRMATION -->
+  @if (showLogoutConfirmModal) {
+    <div class="modal-overlay logout-modal-overlay" (click)="cancelLogout()">
+      <div class="modal-card logout-confirm-card" (click)="$event.stopPropagation()">
+        <div class="logout-confirm-header">
+          <div class="logout-icon-glow">
+            <span class="material-icons-outlined">logout</span>
+          </div>
+          <h3>Confirm Logout</h3>
+          <p>Are you sure you want to exit the Admin Portal?</p>
+        </div>
+
+        <div class="logout-user-box">
+          <div class="logout-user-avatar">
+            <span class="material-icons-outlined">shield</span>
+          </div>
+          <div class="logout-user-details">
+            <div class="logout-user-title">{{ currentUser()?.displayName || 'Administrator' }}</div>
+            <div class="logout-user-sub">{{ currentUser()?.email || 'admin@invoit.in' }} &bull; Active Session</div>
+          </div>
+        </div>
+
+        <div class="logout-warning-notice">
+          <span class="material-icons-outlined">info</span>
+          <span>You will need to enter your admin credentials again to re-access this dashboard.</span>
+        </div>
+
+        <div class="logout-actions-grid">
+          <button type="button" class="btn-cancel-action" (click)="cancelLogout()">
+            Cancel / Stay Logged In
+          </button>
+          <button type="button" class="btn-danger-logout" (click)="confirmLogout()">
+            <span class="material-icons-outlined">power_settings_new</span>
+            Yes, Log Out Now
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  <!-- MODAL: CREATE / EDIT STAFF SUB-USER -->
+  @if (showSubUserModal) {
+    <div class="modal-overlay" (click)="showSubUserModal = false">
+      <div class="modal-card subuser-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <span class="material-icons-outlined modal-icon">person_add_alt</span>
+            <div>
+              <h3>{{ editingSubUser ? 'Edit User Credentials' : 'Create User Login' }}</h3>
+              <p>Configure credentials and select role: Sub-User or Distributor</p>
+            </div>
+          </div>
+          <button (click)="showSubUserModal = false" class="close-btn">&times;</button>
+        </div>
+
+        @if (subUserSuccessMessage) {
+          <div class="modal-alert-success">
+            <span class="material-icons-outlined">check_circle</span>
+            {{ subUserSuccessMessage }}
+          </div>
+        }
+        @if (subUserErrorMessage) {
+          <div class="modal-alert-error">
+            <span class="material-icons-outlined">error</span>
+            {{ subUserErrorMessage }}
+          </div>
+        }
+
+        <form (ngSubmit)="saveSubUser()" class="entry-form-body">
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" [(ngModel)]="subUserForm.display_name" name="subDisplayName" placeholder="e.g. Rahul Sharma" required />
+            </div>
+            <div class="form-group">
+              <label>Login User ID (Must be Unique) *</label>
+              <input type="text" [(ngModel)]="subUserForm.username" name="subUsername" [disabled]="!!editingSubUser" placeholder="e.g. rahul_user" required />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Email Address (Must be Unique) *</label>
+              <input type="email" [(ngModel)]="subUserForm.email" name="subEmail" placeholder="rahul@invoit.in" required />
+            </div>
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="tel" [(ngModel)]="subUserForm.mobile" name="subMobile" placeholder="9876500001" />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>{{ editingSubUser ? 'New Password (Optional)' : 'Login Password *' }}</label>
+              <input
+                type="text"
+                [(ngModel)]="subUserForm.password"
+                name="subPassword"
+                [placeholder]="editingSubUser ? 'Leave blank to retain current password' : 'Enter password (e.g. 123)'"
+                [required]="!editingSubUser"
+              />
+            </div>
+            <div class="form-group">
+              <label>Role & Permissions *</label>
+              <select [(ngModel)]="subUserForm.role" name="subRole" class="form-select">
+                <option value="SUB_USER">Sub-User (Admin Staff / Operator)</option>
+                <option value="DISTRIBUTOR">Distributor (Dealer Portal Access)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions-bar">
+            <button type="button" class="btn-secondary" (click)="showSubUserModal = false">Cancel</button>
+            <button type="submit" class="btn-primary-submit">
+              <span class="material-icons-outlined">save</span>
+              {{ editingSubUser ? 'Update Staff Login' : 'Save & Create Login' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: SET DISTRIBUTOR LOGIN & PASSWORD -->
+  @if (showDistCredModal && selectedDistForCreds) {
+    <div class="modal-overlay" (click)="showDistCredModal = false">
+      <div class="modal-card dist-cred-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <span class="material-icons-outlined modal-icon">vpn_key</span>
+            <div>
+              <h3>Manage Dealer Login Credentials</h3>
+              <p>{{ selectedDistForCreds.party_name }} ({{ selectedDistForCreds.district }})</p>
+            </div>
+          </div>
+          <button (click)="showDistCredModal = false" class="close-btn">&times;</button>
+        </div>
+
+        @if (distCredSuccessMessage) {
+          <div class="modal-alert-success">
+            <span class="material-icons-outlined">check_circle</span>
+            {{ distCredSuccessMessage }}
+          </div>
+        }
+        @if (distCredErrorMessage) {
+          <div class="modal-alert-error">
+            <span class="material-icons-outlined">error</span>
+            {{ distCredErrorMessage }}
+          </div>
+        }
+
+        <form (ngSubmit)="saveDistCreds()" class="entry-form-body">
+          <div class="form-group">
+            <label>Distributor Name</label>
+            <input type="text" [value]="selectedDistForCreds.party_name" disabled class="disabled-input" />
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Primary Login ID (Registered Mobile) *</label>
+              <input type="tel" [(ngModel)]="distCredForm.mobile" name="distMobile" placeholder="e.g. 9827112233" required />
+            </div>
+            <div class="form-group">
+              <label>Registered Email (Must be Unique)</label>
+              <input type="email" [(ngModel)]="distCredForm.email" name="distEmail" placeholder="dealer@email.com" />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Dealer Portal Password *</label>
+              <input
+                type="text"
+                [(ngModel)]="distCredForm.password"
+                name="distPassword"
+                placeholder="Enter password (default: dist123)"
+                required
+              />
+              <small class="field-hint">Dealer will use this password on the Distributor Login window.</small>
+            </div>
+            <div class="form-group">
+              <label>Portal Access Status</label>
+              <select [(ngModel)]="distCredForm.status" name="distStatus" class="form-select">
+                <option [ngValue]="1">Active & Enabled (Can Login)</option>
+                <option [ngValue]="0">Disabled / Suspended (Cannot Login)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions-bar">
+            <button type="button" class="btn-secondary" (click)="showDistCredModal = false">Cancel</button>
+            <button type="submit" class="btn-primary-submit">
+              <span class="material-icons-outlined">check</span>
+              Save Credentials
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: OEM DIRECT SALE & WARRANTY ACTIVATION -->
+  @if (showOemSaleModal && selectedUnitForOemSale) {
+    <div class="modal-overlay" (click)="closeOemSaleModal()">
+      <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>
+              {{ isOemUnitAlreadySold ? '🔒 View Direct Sale & Warranty Record' : '⚡ OEM Direct Sale & Warranty Activation' }}
+            </h3>
+            <p>
+              {{ isOemUnitAlreadySold ? 'This product was sold directly by OEM. Invoice and Sale Date are permanent.' : 'Enter customer invoice details to sell directly and start warranty coverage.' }}
+            </p>
+          </div>
+          <button (click)="closeOemSaleModal()" class="close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          @if (oemSaleErrorMessage) {
+            <div class="alert alert-danger animate-fade-in" style="margin-bottom: 1.25rem;">
+              <span class="material-icons-outlined">error</span>
+              <span>{{ oemSaleErrorMessage }}</span>
+            </div>
+          }
+
+          @if (oemSaleSuccessMessage) {
+            <div class="alert alert-success animate-fade-in" style="margin-bottom: 1.25rem;">
+              <span class="material-icons-outlined">check_circle</span>
+              <span>{{ oemSaleSuccessMessage }}</span>
+            </div>
+          }
+
+          @if (isOemUnitAlreadySold) {
+            <div class="warranty-rule-alert amber animate-fade-in" style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start; padding: 1rem; border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a;">
+              <span class="material-icons-outlined" style="color: #b45309; font-size: 24px;">lock</span>
+              <div style="font-size: 0.85rem; color: #92400e; line-height: 1.5;">
+                <strong>Warranty Active & Details Locked:</strong> This unit has already been sold and invoiced. Per warranty policy, the <strong>Customer Invoice Number</strong> and <strong>Sale Date</strong> are immutable and cannot be altered or modified.
+              </div>
+            </div>
+          } @else {
+            <div class="warranty-rule-alert blue animate-fade-in" style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start; padding: 1rem; border-radius: 8px; background: #eff6ff; border: 1px solid #bfdbfe;">
+              <span class="material-icons-outlined" style="color: #1d4ed8; font-size: 24px;">info</span>
+              <div style="font-size: 0.85rem; color: #1e40af; line-height: 1.5;">
+                <strong>OEM Direct Sale Policy:</strong> The warranty period (<strong>{{ selectedUnitForOemSale.warranty_months }} Months</strong>) starts strictly from the <strong>Customer Sale Date</strong> entered below. Once saved, the Invoice Number & Sale Date are permanently recorded.
+              </div>
+            </div>
+          }
+
+          <!-- Selected Unit Summary Card -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+            <div>
+              <small style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Serial Number</small>
+              <div style="font-family: monospace; font-size: 1rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem;">
+                {{ selectedUnitForOemSale.serial_no }}
+              </div>
+            </div>
+            <div>
+              <small style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Model & Category</small>
+              <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b; margin-top: 0.25rem;">
+                {{ selectedUnitForOemSale.model_no }} ({{ selectedUnitForOemSale.category_name }})
+              </div>
+            </div>
+            <div>
+              <small style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Warranty Duration</small>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #047857; margin-top: 0.25rem;">
+                {{ selectedUnitForOemSale.warranty_months }} Months
+              </div>
+            </div>
+          </div>
+
+          <form (ngSubmit)="submitOemSale()" id="oemSaleForm">
+            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label>End Customer / Department Name *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="oemSaleFormData.customer_name"
+                  name="oemCustName"
+                  placeholder="e.g. AC TRIBLE DIPARTMENT"
+                  [disabled]="isOemUnitAlreadySold || isSubmittingOemSale"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>District (Zila) *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="oemSaleFormData.zila"
+                  name="oemZila"
+                  placeholder="e.g. BILASPUR"
+                  [disabled]="isOemUnitAlreadySold || isSubmittingOemSale"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+              <div class="form-group">
+                <label>
+                  Customer Tax Invoice Number *
+                  @if (isOemUnitAlreadySold) {
+                    <span style="display:inline-flex; align-items:center; gap:2px; font-size:11px; color:#b45309; font-weight:normal; margin-left:4px;">
+                      <span class="material-icons-outlined" style="font-size:13px;">lock</span> Locked
+                    </span>
+                  }
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="oemSaleFormData.invoice_no"
+                  name="oemInvNo"
+                  placeholder="e.g. OEM-INV-2026-001"
+                  [disabled]="isOemUnitAlreadySold || isSubmittingOemSale"
+                  required
+                />
+                <small class="field-hint">Actual GST tax invoice given to the customer.</small>
+              </div>
+
+              <div class="form-group">
+                <label>
+                  Customer Sale Date *
+                  @if (isOemUnitAlreadySold) {
+                    <span style="display:inline-flex; align-items:center; gap:2px; font-size:11px; color:#b45309; font-weight:normal; margin-left:4px;">
+                      <span class="material-icons-outlined" style="font-size:13px;">lock</span> Locked
+                    </span>
+                  }
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="oemSaleFormData.invoice_date"
+                  name="oemInvDate"
+                  [disabled]="isOemUnitAlreadySold || isSubmittingOemSale"
+                  required
+                />
+                <small class="field-hint">Warranty starts from this date and ends after {{ selectedUnitForOemSale.warranty_months }} months.</small>
+              </div>
+            </div>
+
+            <div class="modal-actions-bar">
+              <button type="button" class="btn-secondary" (click)="closeOemSaleModal()">
+                {{ isOemUnitAlreadySold ? 'Close' : 'Cancel' }}
+              </button>
+              @if (!isOemUnitAlreadySold) {
+                <button type="submit" class="btn-primary-submit" [disabled]="isSubmittingOemSale">
+                  <span class="material-icons-outlined">verified</span>
+                  {{ isSubmittingOemSale ? 'Activating Warranty...' : 'Save Direct Sale & Activate Warranty' }}
+                </button>
+              }
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   }

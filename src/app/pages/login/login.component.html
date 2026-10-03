@@ -1,0 +1,228 @@
+<section class="login-wrapper">
+  <!-- Dynamic Background Glow Elements -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="login-container">
+    <!-- Brand Header -->
+    <div class="login-brand-header">
+      <div class="brand-badge">
+        <span class="material-icons-outlined brand-icon">security</span>
+        <span>INVO IT MANAGEMENT CONSOLE</span>
+      </div>
+      <h1 class="login-title">
+        {{ selectedRole === 'ADMIN' ? 'Admin Portal Sign In' : 'Distributor Portal Sign In' }}
+      </h1>
+      <p class="login-subtitle">
+        @if (selectedRole === 'ADMIN') {
+          Enter your administrative credentials to manage serial numbers, dealer accounts, and warranty records.
+        } @else {
+          Enter your registered dealer mobile number or GSTIN to access your warranty registry.
+        }
+      </p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+      <!-- Role Switcher Segment -->
+      <div class="role-selector-bar">
+        <button
+          type="button"
+          class="role-switch-btn"
+          [class.active]="selectedRole === 'ADMIN'"
+          (click)="setRole('ADMIN')"
+          id="btn-role-admin"
+        >
+          <span class="material-icons-outlined">shield</span>
+          <span>Admin / Sub-User</span>
+        </button>
+
+        <button
+          type="button"
+          class="role-switch-btn"
+          [class.active]="selectedRole === 'DISTRIBUTOR'"
+          (click)="setRole('DISTRIBUTOR')"
+          id="btn-role-distributor"
+        >
+          <span class="material-icons-outlined">storefront</span>
+          <span>Distributor</span>
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert-error animate-shake">
+          <span class="material-icons-outlined">error_outline</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" class="login-form" autocomplete="on">
+        <!-- Username / Mobile / GSTIN -->
+        <div class="form-group">
+          <label for="login-identifier">
+            {{ selectedRole === 'ADMIN' ? 'Admin Username or Email' : 'Distributor Mobile / GSTIN / Name' }}
+          </label>
+          <div class="input-with-icon">
+            <span class="material-icons-outlined field-icon">
+              {{ selectedRole === 'ADMIN' ? 'person' : 'badge' }}
+            </span>
+            <input
+              type="text"
+              id="login-identifier"
+              name="identifier"
+              [(ngModel)]="username"
+              [placeholder]="selectedRole === 'ADMIN' ? 'e.g. admin or admin@invoit.in' : 'e.g. 9827112233 or In-vo it'"
+              required
+              autofocus
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="login-password">
+              {{ selectedRole === 'ADMIN' ? 'Admin Secure Password' : 'Dealer Portal Password' }}
+            </label>
+          </div>
+          <div class="input-with-icon">
+            <span class="material-icons-outlined field-icon">lock</span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="login-password"
+              name="password"
+              [(ngModel)]="password"
+              [placeholder]="selectedRole === 'ADMIN' ? 'Enter admin password' : 'Enter password (default: dist123)'"
+              required
+            />
+            <button
+              type="button"
+              class="btn-toggle-eye"
+              (click)="toggleShowPassword()"
+              tabindex="-1"
+              title="Toggle password visibility"
+            >
+              <span class="material-icons-outlined">
+                {{ showPassword ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me Checkbox -->
+        <div class="form-row-remember">
+          <label class="remember-checkbox-label">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+            <span>Keep me signed in on this browser</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="btn-login-submit"
+          [disabled]="isLoading"
+          id="btn-auth-submit"
+        >
+          @if (isLoading) {
+            <span class="spinner"></span>
+            <span>Authenticating...</span>
+          } @else {
+            <span class="material-icons-outlined">login</span>
+            <span>
+              {{ selectedRole === 'ADMIN' ? 'Sign In to Admin Portal' : 'Sign In as Distributor' }}
+            </span>
+          }
+        </button>
+      </form>
+
+      <!-- Quick Fill Credentials Helper -->
+      <div class="quick-credentials-box">
+        <span class="quick-title">
+          <span class="material-icons-outlined">key</span>
+          {{ selectedRole === 'ADMIN' ? 'Authorized Admin Quick Login:' : 'Registered Distributors Quick Login:' }}
+        </span>
+
+        @if (selectedRole === 'ADMIN') {
+          <div class="quick-buttons">
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('admin', 'admin123')"
+            >
+              <span>Super Admin: <strong>admin</strong> / <strong>admin123</strong></span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('rahul_user', '123')"
+            >
+              <span>Sub-User: <strong>rahul_user</strong> / <strong>123</strong></span>
+            </button>
+          </div>
+        } @else {
+          <div class="quick-buttons-grid">
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('amit_dist', '123')"
+              title="Distributor User"
+            >
+              <span>Distributor (<strong>amit_dist</strong> / 123)</span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('9827112233', 'dist123')"
+              title="In-vo it industry pvt. Ltd. (Bilaspur)"
+            >
+              <span>In-vo it (<strong>9827112233</strong> / dist123)</span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('9425234567', 'dist123')"
+              title="R. P. ENTERPRISES (Bilaspur)"
+            >
+              <span>R. P. Ent (<strong>9425234567</strong> / dist123)</span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('9826198765', 'dist123')"
+              title="M. R. ENTERPRISES (Bilaspur)"
+            >
+              <span>M. R. Ent (<strong>9826198765</strong> / dist123)</span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('9752109876', 'dist123')"
+              title="Gunjan Industry (Bilaspur)"
+            >
+              <span>Gunjan Ind (<strong>9752109876</strong> / dist123)</span>
+            </button>
+            <button
+              type="button"
+              class="btn-quick-cred"
+              (click)="fillQuickCredentials('9981234567', 'dist123')"
+              title="star enterprises (Bilaspur)"
+            >
+              <span>star ent (<strong>9981234567</strong> / dist123)</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="login-footer-links">
+      <a routerLink="/" class="footer-link">
+        <span class="material-icons-outlined">arrow_back</span>
+        Return to Public Website
+      </a>
+      <span class="dot-separator">•</span>
+      <a routerLink="/warranty-check" class="footer-link">Warranty Check</a>
+    </div>
+  </div>
+</section>
