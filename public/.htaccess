@@ -1,6 +1,11 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # (Optional) If Node.js runs on a local port like 3000, uncomment the line below to proxy API calls:
+  # RewriteRule ^api/(.*)$ http://127.0.0.1:3000/api/$1 [P,L]
+
+  # Angular Single Page Application (SPA) client routing:
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
