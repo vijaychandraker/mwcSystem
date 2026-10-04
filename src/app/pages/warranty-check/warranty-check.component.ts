@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-warranty-check',
   imports: [CommonModule, FormsModule, RouterLink],
@@ -31,7 +33,7 @@ export class WarrantyCheckComponent {
     this.warrantyResult = null;
     this.showCardModal = false;
 
-    const apiUrl = `http://localhost:3000/api/warranty/${encodeURIComponent(serial)}`;
+    const apiUrl = `${environment.apiUrl}/warranty/${encodeURIComponent(serial)}`;
 
     this.http.get<any>(apiUrl).subscribe({
       next: (res) => {

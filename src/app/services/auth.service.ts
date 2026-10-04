@@ -33,11 +33,13 @@ export interface LoginResponse {
   distributor?: DistributorUser;
 }
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private adminSessionKey = 'invo_admin_session';
   private distSessionKey = 'invo_dist_session';
 

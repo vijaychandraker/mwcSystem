@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export interface DistributorInventoryItem {
   unit_id: number;
@@ -82,7 +83,7 @@ export class DistributorComponent implements OnInit {
 
   fetchDistributors() {
     const loggedIn = this.authService.getDistributor();
-    fetch('http://localhost:3000/api/parties')
+    fetch(`${environment.apiUrl}/parties`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -149,7 +150,7 @@ export class DistributorComponent implements OnInit {
   fetchDistributorInventory() {
     const loggedIn = this.authService.getDistributor();
     const partyId = (loggedIn && loggedIn.party_id) ? loggedIn.party_id : this.selectedDistributorId;
-    fetch(`http://localhost:3000/api/distributor/inventory/${partyId}`)
+    fetch(`${environment.apiUrl}/distributor/inventory/${partyId}`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -158,7 +159,7 @@ export class DistributorComponent implements OnInit {
       })
       .catch(() => {
         // Fallback in-memory filter if backend offline
-        fetch('http://localhost:3000/api/inventory')
+        fetch(`${environment.apiUrl}/inventory`)
           .then(r => r.json())
           .then(all => {
             if (Array.isArray(all)) {
@@ -292,7 +293,7 @@ export class DistributorComponent implements OnInit {
       seller_party_id: this.selectedDistributorId
     };
 
-    fetch('http://localhost:3000/api/distributor/sell', {
+    fetch(`${environment.apiUrl}/distributor/sell`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

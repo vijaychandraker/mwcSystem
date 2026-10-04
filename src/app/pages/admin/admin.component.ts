@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export interface Party {
   party_id: number;
@@ -282,12 +283,12 @@ export class AdminComponent implements OnInit {
   }
 
   fetchDataFromApi() {
-    fetch('http://localhost:3000/api/categories').then(r => r.json()).then(data => { if (Array.isArray(data)) this.categories = data; }).catch(() => {});
-    fetch('http://localhost:3000/api/parties').then(r => r.json()).then(data => { if (Array.isArray(data)) this.parties = data; }).catch(() => {});
-    fetch('http://localhost:3000/api/models').then(r => r.json()).then(data => { if (Array.isArray(data)) this.models = data; }).catch(() => {});
-    fetch('http://localhost:3000/api/inventory').then(r => r.json()).then(data => { if (Array.isArray(data)) this.inventory = data; }).catch(() => {});
-    fetch('http://localhost:3000/api/invoices').then(r => r.json()).then(data => { if (Array.isArray(data)) this.invoices = data; }).catch(() => {});
-    fetch('http://localhost:3000/api/customers').then(r => r.json()).then(data => { if (Array.isArray(data)) this.customers = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/categories`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.categories = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/parties`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.parties = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/models`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.models = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/inventory`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.inventory = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/invoices`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.invoices = data; }).catch(() => {});
+    fetch(`${environment.apiUrl}/customers`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.customers = data; }).catch(() => {});
     this.fetchSubUsers();
   }
 
@@ -617,7 +618,7 @@ export class AdminComponent implements OnInit {
       zila: isDirectSale ? this.newProductEntry.zila.trim() : null
     };
 
-    fetch('http://localhost:3000/api/inventory', {
+    fetch(`${environment.apiUrl}/inventory`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -661,7 +662,7 @@ export class AdminComponent implements OnInit {
     const newItem: Party = { party_id: this.parties.length + 1, ...this.newParty, status: 1 };
     this.parties.unshift(newItem);
     this.showPartyModal = false;
-    fetch('http://localhost:3000/api/parties', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newItem) }).catch(() => {});
+    fetch(`${environment.apiUrl}/parties`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newItem) }).catch(() => {});
   }
 
   addCustomer() {
@@ -683,7 +684,7 @@ export class AdminComponent implements OnInit {
     this.showCustomerModal = false;
     this.newCustomer = { customer_name: '', department: '', contact_person: '', mobile: '', email: '', address: '', district: 'BILASPUR', state: 'Chhattisgarh', pincode: '495001' };
 
-    fetch('http://localhost:3000/api/customers', {
+    fetch(`${environment.apiUrl}/customers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newItem)
@@ -705,7 +706,7 @@ export class AdminComponent implements OnInit {
     };
     this.models.unshift(newItem);
     this.showModelModal = false;
-    fetch('http://localhost:3000/api/models', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newItem) }).catch(() => {});
+    fetch(`${environment.apiUrl}/models`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newItem) }).catch(() => {});
   }
 
   viewTaxInvoice(inv: Invoice) {
@@ -719,7 +720,7 @@ export class AdminComponent implements OnInit {
 
   // --- SUB-USERS & LOGINS MANAGEMENT METHODS ---
   fetchSubUsers() {
-    fetch('http://localhost:3000/api/admin/sub-users')
+    fetch(`${environment.apiUrl}/admin/sub-users`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data) && data.length) {
@@ -800,7 +801,7 @@ export class AdminComponent implements OnInit {
         return;
       }
 
-      fetch(`http://localhost:3000/api/admin/sub-users/${this.editingSubUser.user_id}`, {
+      fetch(`${environment.apiUrl}/admin/sub-users/${this.editingSubUser.user_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this.subUserForm)
@@ -843,7 +844,7 @@ export class AdminComponent implements OnInit {
         return;
       }
 
-      fetch('http://localhost:3000/api/admin/sub-users', {
+      fetch(`${environment.apiUrl}/admin/sub-users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this.subUserForm)
@@ -872,7 +873,7 @@ export class AdminComponent implements OnInit {
 
   deleteSubUser(id: number) {
     if (!confirm('Are you sure you want to remove this login account?')) return;
-    fetch(`http://localhost:3000/api/admin/sub-users/${id}`, { method: 'DELETE' })
+    fetch(`${environment.apiUrl}/admin/sub-users/${id}`, { method: 'DELETE' })
       .then(() => this.fetchSubUsers())
       .catch(() => {
         this.subUsers = this.subUsers.filter(u => u.user_id !== id);
@@ -919,7 +920,7 @@ export class AdminComponent implements OnInit {
       }
     }
 
-    fetch(`http://localhost:3000/api/admin/parties/${this.selectedDistForCreds.party_id}/credentials`, {
+    fetch(`${environment.apiUrl}/admin/parties/${this.selectedDistForCreds.party_id}/credentials`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this.distCredForm)
@@ -1017,7 +1018,7 @@ export class AdminComponent implements OnInit {
       seller_party_id: 1 // OEM Direct Sale
     };
 
-    fetch('http://localhost:3000/api/distributor/sell', {
+    fetch(`${environment.apiUrl}/distributor/sell`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

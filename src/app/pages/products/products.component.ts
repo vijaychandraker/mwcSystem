@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 
+import { environment } from '../../../environments/environment';
+
 export interface ProductModel {
   model_id: number;
   category_id: number;
@@ -51,7 +53,7 @@ export class ProductsComponent implements OnInit {
 
   fetchProducts() {
     this.isLoading = true;
-    this.http.get<any[]>('http://localhost:3000/api/products').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/products`).subscribe({
       next: (data) => {
         this.isLoading = false;
         if (Array.isArray(data) && data.length > 0) {
