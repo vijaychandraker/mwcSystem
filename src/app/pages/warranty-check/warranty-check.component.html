@@ -17,20 +17,64 @@
 
       <div class="search-form">
         <div class="search-form-row">
-          <!-- Category Select Dropdown -->
-          <div class="category-select-box">
-            <span class="material-icons-outlined cat-select-icon">{{ currentCategoryConfig.icon }}</span>
-            <select
-              [(ngModel)]="selectedCategory"
-              (ngModelChange)="selectCategory($event)"
-              class="cat-dropdown-select"
+          <!-- Custom Premium Category Dropdown -->
+          <div class="custom-category-dropdown" id="warranty-category-dropdown-container">
+            <button
+              type="button"
+              class="custom-cat-trigger"
+              (click)="toggleDropdown($event)"
+              [class.open]="isDropdownOpen"
               id="warranty-category-dropdown"
-              title="Filter by Category">
-              @for (cat of categories; track cat.id) {
-                <option [value]="cat.id">{{ cat.name }}</option>
-              }
-            </select>
-            <span class="material-icons-outlined cat-select-arrow">expand_more</span>
+              title="Select Product Category">
+              <div class="cat-trigger-left">
+                <span class="cat-icon-badge" [ngClass]="currentCategoryConfig.colorClass">
+                  <span class="material-icons-outlined">{{ currentCategoryConfig.icon }}</span>
+                </span>
+                <div class="cat-trigger-text">
+                  <span class="cat-trigger-label">Filter Category</span>
+                  <span class="cat-trigger-name">{{ currentCategoryConfig.name }}</span>
+                </div>
+              </div>
+              <span class="material-icons-outlined cat-trigger-chevron" [class.rotated]="isDropdownOpen">
+                expand_more
+              </span>
+            </button>
+
+            <!-- Floating Custom Dropdown Menu -->
+            @if (isDropdownOpen) {
+              <div class="custom-cat-menu animate-dropdown-fade" (click)="$event.stopPropagation()">
+                <div class="cat-menu-header">
+                  <div class="cat-menu-header-left">
+                    <span class="material-icons-outlined cat-menu-header-icon">tune</span>
+                    <span>Select Product Category</span>
+                  </div>
+                  <span class="cat-menu-count">{{ categories.length }} Categories</span>
+                </div>
+
+                <div class="cat-options-list">
+                  @for (cat of categories; track cat.id) {
+                    <div
+                      class="cat-option-item"
+                      [class.active]="selectedCategory === cat.id"
+                      (click)="selectCategoryOption(cat.id)">
+                      <div class="cat-option-badge" [ngClass]="cat.colorClass">
+                        <span class="material-icons-outlined">{{ cat.icon }}</span>
+                      </div>
+                      <div class="cat-option-details">
+                        <div class="cat-option-title-row">
+                          <span class="cat-option-title">{{ cat.name }}</span>
+                          <span class="cat-pill-tag" [ngClass]="cat.colorClass">{{ cat.badgeText }}</span>
+                        </div>
+                        <span class="cat-option-tagline">{{ cat.tagline }}</span>
+                      </div>
+                      @if (selectedCategory === cat.id) {
+                        <span class="material-icons-outlined cat-option-check">check_circle</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Serial Number Input -->
@@ -413,22 +457,47 @@
           <div class="result-card-mockup error-card">
             <div class="card-status-header expired-header">
               <div class="shield-icon red-shield">
-                <span class="material-icons-outlined">help_outline</span>
+                <span class="material-icons-outlined">search_off</span>
               </div>
               <div class="status-title-group">
-                <h3 class="status-title text-red">RECORD NOT FOUND</h3>
-                <p class="status-subtitle">No warranty record matching this serial number in INVO IT database.</p>
+                <h3 class="status-title text-red">WARRANTY RECORD NOT FOUND</h3>
+                <p class="status-subtitle">
+                  @if (warrantyResult.searchedCategory && warrantyResult.searchedCategory !== 'All') {
+                    No {{ warrantyResult.searchedCategory }} warranty record found for serial "{{ warrantyResult.serialNo }}".
+                  } @else {
+                    No warranty record matching serial number "{{ warrantyResult.serialNo }}" in INVO IT database.
+                  }
+                </p>
               </div>
             </div>
+
+            <div class="mockup-table">
+              <div class="table-row">
+                <span class="col-label">Queried Serial</span>
+                <span class="col-val font-mono"><code>{{ warrantyResult.serialNo }}</code></span>
+              </div>
+              <div class="table-row">
+                <span class="col-label">Category Filter</span>
+                <span class="col-val font-bold text-amber">{{ warrantyResult.searchedCategory || 'All Categories' }}</span>
+              </div>
+              <div class="table-row">
+                <span class="col-label">Database Status</span>
+                <span class="col-val text-red font-bold">Record Not Found / Unregistered</span>
+              </div>
+            </div>
+
             <p class="error-msg-text">{{ warrantyResult.message }}</p>
-            <div class="error-links-group">
-              <a href="tel:0000-000-0000" class="btn-outline">
-                <span class="material-icons-outlined">phone</span>
-                Call Helpline (0000-000-0000)
-              </a>
-              <a routerLink="/contact" class="btn-outline">
-                <span class="material-icons-outlined">email</span>
-                Contact Support
+
+            <div class="category-switch-actions" style="margin-top: 1rem;">
+              @if (warrantyResult.searchedCategory && warrantyResult.searchedCategory !== 'All') {
+                <button class="btn-check" (click)="switchCategoryAndSearch('All')">
+                  <span class="material-icons-outlined">travel_explore</span>
+                  Try Searching in "All Categories"
+                </button>
+              }
+              <a routerLink="/contact" class="btn-reset link-btn">
+                <span class="material-icons-outlined">support_agent</span>
+                Contact Support Desk
               </a>
             </div>
           </div>
