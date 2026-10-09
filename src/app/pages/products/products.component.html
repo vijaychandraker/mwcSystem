@@ -1,7 +1,7 @@
 <section class="page-hero">
   <div class="page-hero-content">
     <h1>Our Technology <span class="highlight">Products</span></h1>
-    <p>Reliable, innovative and value-driven hardware products & solutions by INVO IT Industries Pvt. Ltd.</p>
+    <p>Reliable, innovative and high-performance hardware products engineered by INVO IT Industries Pvt. Ltd.</p>
   </div>
 </section>
 
@@ -27,7 +27,7 @@
         <input
           type="text"
           [(ngModel)]="searchQuery"
-          placeholder="Search by product name or model..."
+          placeholder="Search product, model, specs (e.g. i5, 75 Inch, QLED)..."
           class="search-input"
         />
         @if (searchQuery) {
@@ -36,13 +36,7 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    @if (isLoading) {
-      <div class="loading-state">
-        <span class="spinner"></span>
-        <p>Loading products from INVO IT database...</p>
-      </div>
-    } @else if (filteredProducts.length === 0) {
+    @if (filteredProducts.length === 0) {
       <div class="empty-products">
         <span class="material-icons-outlined empty-icon">inventory_2</span>
         <h3>No Products Found</h3>
@@ -54,41 +48,57 @@
       <div class="products-grid animate-fade-in">
         @for (product of filteredProducts; track product.model_id) {
           <div class="product-card">
-            <div class="product-badge">{{ product.badge || (product.warranty_month + ' Months Warranty') }}</div>
-            <div class="product-visual">
-              <span class="material-icons-outlined product-icon">{{ getCategoryIcon(product.category_name) }}</span>
+            <!-- Badges -->
+            <div class="card-top-badges">
+              <span class="product-badge">{{ product.badge }}</span>
             </div>
-            <div class="product-info">
-              <span class="product-category">{{ product.category_name }}</span>
-              <h3 class="product-name">{{ product.product_name }}</h3>
-              <p class="model-tag">
-                <span>Brand: <strong>{{ product.brand }}</strong></span> • 
-                <span>Model: <strong>{{ product.model_no }}</strong></span>
-              </p>
-              
-              <ul class="product-features">
-                <li>
-                  <span class="material-icons-outlined">verified</span>
-                  {{ product.warranty_month }} Months Official Warranty
-                </li>
-                <li>
-                  <span class="material-icons-outlined">precision_manufacturing</span>
-                  Make in India Technology
-                </li>
-                <li>
-                  <span class="material-icons-outlined">build</span>
-                  Full Support & Genuine Parts
-                </li>
-              </ul>
 
-              <div class="product-footer">
-                <div class="warranty-tag-box">
-                  <span class="warranty-term">{{ product.warranty_month }}M Coverage</span>
+            <!-- Product Visual Header -->
+            <div class="product-visual">
+              @if (product.imageUrl) {
+                <div class="product-img-wrap">
+                  <img [src]="product.imageUrl" [alt]="product.product_name" class="product-img" />
                 </div>
-                <div class="card-action-btns">
-                  <a routerLink="/warranty-check" class="product-btn secondary-btn" title="Check Warranty Status">
-                    <span class="material-icons-outlined">verified_user</span> Check Warranty
-                  </a>
+              } @else {
+                <div class="product-icon-wrap">
+                  <span class="material-icons-outlined product-icon">{{ getCategoryIcon(product.category_name) }}</span>
+                </div>
+              }
+              <div class="visual-brand-tag">{{ product.brand }}</div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+              <div class="category-header">
+                <span class="product-category">{{ product.category_name }}</span>
+                <span class="model-code">Model: <strong>{{ product.model_no }}</strong></span>
+              </div>
+
+              <h2 class="product-name">{{ product.product_name }}</h2>
+
+              <!-- Key Specs Highlights Grid -->
+              <div class="specs-highlight-box">
+                <div class="specs-title">Key Specifications</div>
+                <div class="specs-grid">
+                  @for (spec of product.keySpecs; track spec.label) {
+                    <div class="spec-pill">
+                      <span class="spec-label">{{ spec.label }}:</span>
+                      <span class="spec-val">{{ spec.value }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Card Action Buttons -->
+              <div class="product-footer">
+                <button
+                  type="button"
+                  (click)="openSpecsModal(product)"
+                  class="product-btn spec-btn"
+                  title="View Complete Specifications Table">
+                  <span class="material-icons-outlined">list_alt</span> View Full Specs
+                </button>
+                <div class="action-sub-btns">
                   <a routerLink="/contact" class="product-btn primary-btn" title="Contact Sales / Dealer Query">
                     <span class="material-icons-outlined">mail</span> Inquire
                   </a>
@@ -101,3 +111,63 @@
     }
   </div>
 </section>
+
+<!-- Full Technical Specifications Modal -->
+@if (selectedProductForModal) {
+  <div class="modal-backdrop" (click)="closeSpecsModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-category-tag">{{ selectedProductForModal.category_name }}</span>
+          <h2>{{ selectedProductForModal.product_name }} — Technical Specifications</h2>
+          <p class="modal-subtitle">Official product data sheet & configuration parameters</p>
+        </div>
+        <button class="modal-close-btn" (click)="closeSpecsModal()" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="quick-summary-bar">
+          <div class="summary-item">
+            <span class="summary-label">Brand:</span>
+            <span class="summary-value">{{ selectedProductForModal.brand }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Model No:</span>
+            <span class="summary-value">{{ selectedProductForModal.model_no }}</span>
+          </div>
+        </div>
+
+        <div class="specs-table-wrap">
+          <table class="official-specs-table">
+            <thead>
+              <tr>
+                <th style="width: 32%;">Parameter / Component</th>
+                <th style="width: 68%;">Specification Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of selectedProductForModal.fullSpecs; track item.label) {
+                <tr>
+                  <td class="param-name">{{ item.label }}</td>
+                  <td class="param-desc">{{ item.value }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-note">
+          <span class="material-icons-outlined">info</span> All specifications conform to official INVO IT hardware standards.
+        </div>
+        <div class="modal-footer-actions">
+          <button class="modal-btn-close" (click)="closeSpecsModal()">Close Sheet</button>
+          <a routerLink="/contact" (click)="closeSpecsModal()" class="modal-btn-inquire">
+            <span class="material-icons-outlined">mail</span> Contact Sales
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}

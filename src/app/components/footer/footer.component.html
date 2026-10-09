@@ -1,84 +1,89 @@
-<footer class="footer" id="main-footer">
-  <div class="footer-container">
-    <div class="footer-grid">
-      <!-- Brand -->
-      <div class="footer-brand">
-        <div class="footer-logo">
-          <div class="footer-logo-icon">
-            <span class="material-icons-outlined">water_drop</span>
+@if (isPortalRoute) {
+  <!-- Ultra-Compact Minimal Portal Footer for Admin & Distributor Dashboards -->
+  <footer class="portal-mini-footer" id="portal-mini-footer">
+    <div class="portal-mini-container">
+      <div class="portal-mini-left">
+        <span class="portal-status-dot"></span>
+        <span class="portal-copyright">&copy; {{ currentYear }} INVO IT Industries Pvt. Ltd. &bull; Enterprise Console</span>
+      </div>
+      <div class="portal-mini-right">
+        <span class="portal-version">Serial Registry &amp; Warranty Portal v2.4</span>
+      </div>
+    </div>
+  </footer>
+} @else {
+  <!-- Streamlined Compact Footer for Public Website Pages -->
+  <footer class="footer" id="main-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Brand -->
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <div class="footer-logo-icon">
+              <span class="material-icons-outlined">computer</span>
+            </div>
+            <div>
+              <span class="footer-brand-name">INVO IT</span>
+              <span class="footer-brand-tagline">SMART TECHNOLOGY. RELIABLE INNOVATION</span>
+            </div>
           </div>
-          <div>
-            <span class="footer-brand-name">MWC</span>
-            <span class="footer-brand-tagline">TRUSTED QUALITY. ALWAYS</span>
+          <p class="footer-description">
+            Your trusted partner for high-performance computing, smart displays, and commercial IT hardware.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-col">
+          <h4 class="footer-col-title">Quick Links</h4>
+          <ul class="footer-links">
+            @for (link of quickLinks; track link.path) {
+              <li>
+                <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div class="footer-col">
+          <h4 class="footer-col-title">Support</h4>
+          <ul class="footer-links">
+            @for (link of supportLinks; track link.label) {
+              <li>
+                <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="footer-col">
+          <h4 class="footer-col-title">Contact</h4>
+          <div class="footer-contact">
+            <div class="contact-item">
+              <span class="material-icons-outlined">phone</span>
+              <span>0000-000-0000</span>
+            </div>
+            <div class="contact-item">
+              <span class="material-icons-outlined">email</span>
+              <a href="mailto:support@invo.co.in" style="color: inherit; text-decoration: none;">support&#64;invo.co.in</a>
+            </div>
+            <div class="contact-item">
+              <span class="material-icons-outlined">location_on</span>
+              <span>BLOCK-A, Umiya Market, Bhanpuri, Raipur, C.G.</span>
+            </div>
           </div>
         </div>
-        <p class="footer-description">
-          Your trusted partner for premium water solutions. Quality products backed by reliable warranty and expert support.
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <p>Copyright &copy; {{ currentYear }} INVO IT</p>
+        <p class="footer-credits">
+          Website Design &amp; Developed By
+          <a href="https://www.sirmor.com/" target="_blank" rel="noopener noreferrer" class="developer-link">Sirmor Software Solution Pvt. Ltd.</a>
         </p>
-        <div class="footer-social">
-          <a href="#" class="social-link" id="social-facebook" aria-label="Facebook">
-            <span class="material-icons-outlined">thumb_up</span>
-          </a>
-          <a href="#" class="social-link" id="social-twitter" aria-label="Twitter">
-            <span class="material-icons-outlined">tag</span>
-          </a>
-          <a href="#" class="social-link" id="social-instagram" aria-label="Instagram">
-            <span class="material-icons-outlined">photo_camera</span>
-          </a>
-          <a href="#" class="social-link" id="social-youtube" aria-label="YouTube">
-            <span class="material-icons-outlined">play_circle</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Quick Links -->
-      <div class="footer-col">
-        <h4 class="footer-col-title">Quick Links</h4>
-        <ul class="footer-links">
-          @for (link of quickLinks; track link.path) {
-            <li>
-              <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
-            </li>
-          }
-        </ul>
-      </div>
-
-      <!-- Support -->
-      <div class="footer-col">
-        <h4 class="footer-col-title">Support</h4>
-        <ul class="footer-links">
-          @for (link of supportLinks; track link.label) {
-            <li>
-              <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
-            </li>
-          }
-        </ul>
-      </div>
-
-      <!-- Contact -->
-      <div class="footer-col">
-        <h4 class="footer-col-title">Contact</h4>
-        <div class="footer-contact">
-          <div class="contact-item">
-            <span class="material-icons-outlined">phone</span>
-            <span>1800-123-4567</span>
-          </div>
-          <div class="contact-item">
-            <span class="material-icons-outlined">email</span>
-            <a href="mailto:support@invo.co.in" style="color: inherit; text-decoration: none;">support&#64;invo.co.in</a>
-          </div>
-          <div class="contact-item">
-            <span class="material-icons-outlined">location_on</span>
-            <span>Mumbai, Maharashtra, India</span>
-          </div>
-        </div>
       </div>
     </div>
-
-    <!-- Bottom Bar -->
-    <div class="footer-bottom">
-      <p>&copy; {{ currentYear }} MWC System. All rights reserved.</p>
-      <p class="footer-credits">Designed with <span class="heart">♥</span> for quality</p>
-    </div>
-  </div>
-</footer>
+  </footer>
+}

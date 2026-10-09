@@ -1,13 +1,13 @@
-<header class="header" id="main-header">
+<header class="header" [class.scrolled]="isScrolled" id="main-header">
   <div class="header-container">
     <!-- Logo -->
     <a routerLink="/" class="logo" id="logo-link" (click)="closeMobileMenu()">
       <div class="logo-icon">
-        <span class="material-icons-outlined">water_drop</span>
+        <span class="material-icons-outlined">computer</span>
       </div>
       <div class="logo-text">
-        <span class="logo-brand">MWC</span>
-        <span class="logo-tagline">TRUSTED QUALITY. ALWAYS</span>
+        <span class="logo-brand">INVO IT</span>
+        <span class="logo-tagline">SMART TECHNOLOGY. RELIABLE INNOVATION</span>
       </div>
     </a>
 
@@ -29,12 +29,142 @@
       </ul>
     </nav>
 
-    <!-- Phone & CTA -->
+    <!-- Phone & Actions -->
     <div class="header-actions">
-      <a href="tel:1800-123-4567" class="phone-link" id="phone-link">
+      <a href="tel:0000-000-0000" class="phone-link" id="phone-link">
         <span class="material-icons-outlined">phone</span>
-        <span>1800-123-4567</span>
+        <span>0000-000-0000</span>
       </a>
+
+      <!-- Login Menu Dropdown Container -->
+      <div class="login-menu-container" id="login-menu-container">
+        <!-- Case 1: Admin is Logged In -->
+        @if (authService.isLoggedIn()) {
+          <button
+            class="header-user-btn admin"
+            id="admin-user-btn"
+            type="button"
+            (click)="toggleLoginDropdown($event)"
+            [class.active]="isLoginDropdownOpen"
+            title="Admin Account Menu">
+            <span class="material-icons-outlined user-badge-icon">admin_panel_settings</span>
+            <span class="user-name">{{ authService.currentUser()?.displayName || 'Admin' }}</span>
+            <span class="material-icons-outlined caret-icon" [class.rotated]="isLoginDropdownOpen">expand_more</span>
+          </button>
+
+          @if (isLoginDropdownOpen) {
+            <div class="login-dropdown-menu" id="admin-dropdown-menu">
+              <div class="dropdown-header">
+                <span class="dropdown-role-tag admin-tag">ADMINISTRATOR</span>
+                <span class="dropdown-user-title">{{ authService.currentUser()?.displayName || 'Admin User' }}</span>
+                <span class="dropdown-user-sub">{{ authService.currentUser()?.email || 'admin@invoit.com' }}</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a routerLink="/admin" class="dropdown-item" (click)="closeLoginDropdown()" id="menu-admin-dashboard">
+                <span class="material-icons-outlined item-icon">dashboard</span>
+                <div class="item-text">
+                  <span class="item-title">Admin Dashboard</span>
+                  <span class="item-sub">Inventory & Product Management</span>
+                </div>
+              </a>
+              <button type="button" class="dropdown-item logout-item" (click)="handleLogout('ADMIN')" id="menu-admin-logout">
+                <span class="material-icons-outlined item-icon">logout</span>
+                <span class="item-title">Logout</span>
+              </button>
+            </div>
+          }
+        }
+        <!-- Case 2: Distributor is Logged In -->
+        @else if (authService.isDistributorLoggedIn()) {
+          <button
+            class="header-user-btn distributor"
+            id="dist-user-btn"
+            type="button"
+            (click)="toggleLoginDropdown($event)"
+            [class.active]="isLoginDropdownOpen"
+            title="Distributor Account Menu">
+            <span class="material-icons-outlined user-badge-icon">storefront</span>
+            <span class="user-name">{{ authService.currentDistributor()?.party_name || 'Distributor' }}</span>
+            <span class="material-icons-outlined caret-icon" [class.rotated]="isLoginDropdownOpen">expand_more</span>
+          </button>
+
+          @if (isLoginDropdownOpen) {
+            <div class="login-dropdown-menu" id="dist-dropdown-menu">
+              <div class="dropdown-header">
+                <span class="dropdown-role-tag dist-tag">DISTRIBUTOR</span>
+                <span class="dropdown-user-title">{{ authService.currentDistributor()?.party_name }}</span>
+                <span class="dropdown-user-sub">{{ authService.currentDistributor()?.contact_person || 'Authorized Dealer' }}</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a routerLink="/distributor" class="dropdown-item" (click)="closeLoginDropdown()" id="menu-dist-portal">
+                <span class="material-icons-outlined item-icon">inventory_2</span>
+                <div class="item-text">
+                  <span class="item-title">Distributor Portal</span>
+                  <span class="item-sub">Stock & Sales Registration</span>
+                </div>
+              </a>
+              <button type="button" class="dropdown-item logout-item" (click)="handleLogout('DISTRIBUTOR')" id="menu-dist-logout">
+                <span class="material-icons-outlined item-icon">logout</span>
+                <span class="item-title">Logout</span>
+              </button>
+            </div>
+          }
+        }
+        <!-- Case 3: Guest / Not Logged In -->
+        @else {
+          <button
+            class="header-login-btn"
+            id="header-login-btn"
+            type="button"
+            (click)="toggleLoginDropdown($event)"
+            [class.active]="isLoginDropdownOpen"
+            title="Portal Login">
+            <span class="material-icons-outlined login-icon">login</span>
+            <span class="login-label">Login</span>
+            <span class="material-icons-outlined caret-icon" [class.rotated]="isLoginDropdownOpen">expand_more</span>
+          </button>
+
+          @if (isLoginDropdownOpen) {
+            <div class="login-dropdown-menu" id="guest-login-dropdown">
+              <div class="dropdown-header">
+                <span class="dropdown-title">ACCOUNT PORTAL</span>
+                <span class="dropdown-sub">Select login type to continue</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a
+                routerLink="/login"
+                [queryParams]="{ role: 'admin' }"
+                class="dropdown-item"
+                (click)="closeLoginDropdown()"
+                id="menu-login-admin">
+                <div class="item-icon-wrapper admin-bg">
+                  <span class="material-icons-outlined">admin_panel_settings</span>
+                </div>
+                <div class="item-text">
+                  <span class="item-title">Admin Portal</span>
+                  <span class="item-sub">Inventory & Components</span>
+                </div>
+                <span class="material-icons-outlined arrow-icon">chevron_right</span>
+              </a>
+              <a
+                routerLink="/login"
+                [queryParams]="{ role: 'distributor' }"
+                class="dropdown-item"
+                (click)="closeLoginDropdown()"
+                id="menu-login-distributor">
+                <div class="item-icon-wrapper dist-bg">
+                  <span class="material-icons-outlined">storefront</span>
+                </div>
+                <div class="item-text">
+                  <span class="item-title">Distributor Portal</span>
+                  <span class="item-sub">Stock & Customer Sales</span>
+                </div>
+                <span class="material-icons-outlined arrow-icon">chevron_right</span>
+              </a>
+            </div>
+          }
+        }
+      </div>
     </div>
 
     <!-- Mobile Menu Toggle -->
@@ -66,9 +196,77 @@
         </li>
       }
     </ul>
-    <a href="tel:1800-123-4567" class="mobile-phone">
+
+    <!-- Mobile Login / Account Section -->
+    <div class="mobile-auth-section">
+      @if (authService.isLoggedIn()) {
+        <div class="mobile-auth-card admin">
+          <div class="card-user-info">
+            <span class="material-icons-outlined">admin_panel_settings</span>
+            <div>
+              <span class="user-title">{{ authService.currentUser()?.displayName || 'Admin' }}</span>
+              <span class="user-subtitle">Administrator</span>
+            </div>
+          </div>
+          <div class="mobile-auth-actions">
+            <a routerLink="/admin" class="mobile-btn primary" (click)="closeMobileMenu()">
+              <span class="material-icons-outlined">dashboard</span>
+              Dashboard
+            </a>
+            <button type="button" class="mobile-btn danger" (click)="handleLogout('ADMIN')">
+              <span class="material-icons-outlined">logout</span>
+              Logout
+            </button>
+          </div>
+        </div>
+      } @else if (authService.isDistributorLoggedIn()) {
+        <div class="mobile-auth-card distributor">
+          <div class="card-user-info">
+            <span class="material-icons-outlined">storefront</span>
+            <div>
+              <span class="user-title">{{ authService.currentDistributor()?.party_name }}</span>
+              <span class="user-subtitle">Distributor</span>
+            </div>
+          </div>
+          <div class="mobile-auth-actions">
+            <a routerLink="/distributor" class="mobile-btn primary" (click)="closeMobileMenu()">
+              <span class="material-icons-outlined">inventory_2</span>
+              Portal
+            </a>
+            <button type="button" class="mobile-btn danger" (click)="handleLogout('DISTRIBUTOR')">
+              <span class="material-icons-outlined">logout</span>
+              Logout
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="mobile-login-prompt">
+          <span class="prompt-label">Portal Access</span>
+          <div class="mobile-login-buttons">
+            <a
+              routerLink="/login"
+              [queryParams]="{ role: 'admin' }"
+              class="mobile-login-link admin"
+              (click)="closeMobileMenu()">
+              <span class="material-icons-outlined">admin_panel_settings</span>
+              <span>Admin Login</span>
+            </a>
+            <a
+              routerLink="/login"
+              [queryParams]="{ role: 'distributor' }"
+              class="mobile-login-link dist"
+              (click)="closeMobileMenu()">
+              <span class="material-icons-outlined">storefront</span>
+              <span>Distributor Login</span>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+
+    <a href="tel:0000-000-0000" class="mobile-phone">
       <span class="material-icons-outlined">phone</span>
-      1800-123-4567
+      0000-000-0000
     </a>
   </nav>
 </header>

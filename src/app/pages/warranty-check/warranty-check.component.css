@@ -86,8 +86,65 @@
   font-size: 0.9rem;
 }
 
+
+/* Search Form Row with Category Dropdown & Input */
+.search-form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: stretch;
+}
+
+.category-select-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--neutral-50);
+  border: 2px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  padding: 0 0.85rem;
+  min-width: 195px;
+  transition: border-color var(--transition-fast);
+}
+
+.category-select-box:focus-within {
+  border-color: var(--accent-500);
+  background: var(--white);
+}
+
+.cat-select-icon {
+  color: #0284c7;
+  font-size: 20px;
+  pointer-events: none;
+  margin-right: 0.35rem;
+}
+
+.cat-dropdown-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  color: var(--neutral-800);
+  padding: 0.75rem 1.4rem 0.75rem 0;
+  cursor: pointer;
+}
+
+.cat-select-arrow {
+  position: absolute;
+  right: 0.65rem;
+  color: var(--neutral-400);
+  font-size: 20px;
+  pointer-events: none;
+}
+
 /* Input Group */
 .input-group {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -95,7 +152,6 @@
   background: var(--neutral-50);
   border: 2px solid var(--neutral-200);
   border-radius: var(--radius-md);
-  margin-bottom: 1.25rem;
   transition: border-color var(--transition-fast);
 }
 
@@ -107,6 +163,27 @@
 .input-icon {
   color: var(--neutral-400);
   font-size: 22px;
+}
+
+.clear-input-btn {
+  background: transparent;
+  border: none;
+  color: var(--neutral-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.clear-input-btn:hover {
+  color: var(--neutral-700);
+  background: var(--neutral-200);
+}
+
+.clear-input-btn .material-icons-outlined {
+  font-size: 18px;
 }
 
 .warranty-input {
@@ -227,42 +304,26 @@
   margin: 0;
 }
 
-.barcode-badge {
+
+.category-switch-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  background: var(--white);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid #e0f2fe;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
-.barcode-tag {
-  font-size: 0.75rem;
-  color: #0f172a;
-
+.category-switch-actions .btn-check {
+  flex: none;
 }
 
-.barcode-tag strong {
-  color: #1e3a8a;
-  font-family: monospace;
-}
-
-.barcode-graphic {
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: 900;
-  font-size: 16px;
-  letter-spacing: 2px;
-  color: #0f172a;
-  user-select: none;
-  line-height: 1;
-  margin-top: 4px;
+.category-switch-actions .btn-reset {
+  flex: none;
 }
 
 /* ===== Result Card Mockup (Matching Image 1 Design) ===== */
 .warranty-result {
   margin-bottom: 3rem;
+  scroll-margin-top: 85px;
 }
 
 .result-card-mockup {
@@ -1068,5 +1129,12 @@
   color: #1e293b;
 }
 
-
-
+@media (max-width: 680px) {
+  .search-form-row {
+    flex-direction: column;
+  }
+  .category-select-box {
+    width: 100%;
+    min-width: 0;
+  }
+}

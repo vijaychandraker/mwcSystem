@@ -103,6 +103,8 @@ export interface Invoice {
   total_qty: number;
   serial_no?: string;
   product_name?: string;
+  customer_id?: number;
+  seller_party_id?: number;
 }
 
 export interface InventoryUnit {
@@ -128,7 +130,7 @@ export interface InventoryUnit {
     sale_type: 'DIRECT' | 'DISTRIBUTOR';
     warranty_start: string;
     warranty_end: string;
-  };
+  } | null;
 }
 
 @Component({
@@ -141,6 +143,10 @@ export class AdminComponent implements OnInit {
   private authService = inject(AuthService);
   currentUser = this.authService.currentUser;
   Math = Math;
+
+  ngOnInit(): void {
+    this.fetchDataFromApi();
+  }
 
   showLogoutConfirmModal = false;
 
@@ -162,6 +168,30 @@ export class AdminComponent implements OnInit {
   }
 
   activeTab: 'overview' | 'inventory' | 'parties' | 'models' | 'transfers' | 'extensions' | 'invoices' | 'customers' | 'users' = 'overview';
+  isSidebarOpen = false;
+
+  toggleSidebar(open?: boolean) {
+    this.isSidebarOpen = typeof open === 'boolean' ? open : !this.isSidebarOpen;
+  }
+
+  selectTab(tab: 'overview' | 'inventory' | 'parties' | 'models' | 'transfers' | 'extensions' | 'invoices' | 'customers' | 'users') {
+    this.activeTab = tab;
+    this.isSidebarOpen = false;
+  }
+
+  get currentTabTitle(): string {
+    switch (this.activeTab) {
+      case 'overview': return 'Executive Overview';
+      case 'inventory': return 'Serials & Warranties Registry';
+      case 'parties': return 'Parties & Authorized Dealers';
+      case 'models': return 'Product Models & Catalog';
+      case 'invoices': return 'Sales & Dispatches (Tax Invoices)';
+      case 'customers': return 'End Users & Government Clients';
+      case 'users': return 'Sub-Users & Logins Management';
+      default: return 'Admin Console';
+    }
+  }
+
   searchQuery = '';
   inventoryFilter: 'ALL' | 'IN_STOCK' | 'SOLD' = 'ALL';
   inventoryCategoryFilter: number | 'ALL' = 'ALL';
@@ -204,18 +234,58 @@ export class AdminComponent implements OnInit {
   entrySuccessMessage = '';
   entryErrorMessage = '';
 
-  // Master Lists - Populated 100% from MariaDB
-  parties: Party[] = [];
-  customers: Customer[] = [];
-  categories: Category[] = [];
-  models: ProductModel[] = [];
+  // Master Lists - Populated with defaults and synced with MariaDB
+  categories: Category[] = [
+    { category_id: 1, category_name: 'Computer' },
+    { category_id: 6, category_name: 'ALL IN ONE PC' },
+    { category_id: 2, category_name: 'Monitor' },
+    { category_id: 3, category_name: 'TV' },
+    { category_id: 4, category_name: 'Interactive Panel' },
+    { category_id: 5, category_name: 'LED Bulb' }
+  ];
+  parties: Party[] = [
+    { party_id: 1, party_type: 'OEM', party_name: 'INVO IT Industries Pvt. Ltd.', gst_no: '07AAAAA0000A1Z5', contact_person: 'Rajesh Gupta', mobile: '9876543210', email: 'info@invoit.in', status: 1 },
+    { party_id: 2, party_type: 'DISTRIBUTOR', party_name: 'In-vo it industry pvt. Ltd.', gst_no: '22AABCI1234F1Z8', contact_person: 'Sandeep Tiwari', mobile: '9827112233', email: 'sales@invoit-cg.com', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 },
+    { party_id: 3, party_type: 'DISTRIBUTOR', party_name: 'R. P. ENTERPRISES', gst_no: '22RPENT5678G1Z1', contact_person: 'Ramesh Patel', mobile: '9425234567', email: 'rpenterprises@gmail.com', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 },
+    { party_id: 4, party_type: 'DISTRIBUTOR', party_name: 'M. R. ENTERPRISES', gst_no: '22MRENT9012H1Z3', contact_person: 'Manish Rawat', mobile: '9826198765', email: 'mrenterprises.bsp@gmail.com', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 },
+    { party_id: 5, party_type: 'DISTRIBUTOR', party_name: 'Gunjan Industry', gst_no: '22GUNJN3456J1Z5', contact_person: 'Gunjan Sharma', mobile: '9752109876', email: 'gunjan.industry@outlook.com', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 },
+    { party_id: 6, party_type: 'DISTRIBUTOR', party_name: 'star enterprises', gst_no: '22STARE7890K1Z7', contact_person: 'Sunil Agrawal', mobile: '9981234567', email: 'starenterprises.bsp@gmail.com', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 }
+  ];
+  customers: Customer[] = [
+    { customer_id: 1, customer_name: 'C TRIBLE DIPARTMEN', department: 'Tribal Welfare Department', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 },
+    { customer_id: 2, customer_name: 'AC TRIBLE DIPARTMENT', department: 'Assistant Commissioner Tribal Dept', district: 'BILASPUR', state: 'Chhattisgarh', status: 1 }
+  ];
+  models: ProductModel[] = [
+    { model_id: 1, category_id: 1, category_name: 'Computer', brand: 'INVO', model_no: 'IN22-0125DS', product_name: 'INVO Entry Level Desktop i3 12th Gen', warranty_month: 36, status: 1 },
+    { model_id: 2, category_id: 6, category_name: 'ALL IN ONE PC', brand: 'INVO', model_no: 'INVO-AIO24', product_name: 'INVO All In One Computer 23.8" FHD', warranty_month: 36, status: 1 },
+    { model_id: 3, category_id: 2, category_name: 'Monitor', brand: 'INVO', model_no: 'INM-21IPS', product_name: 'INVO IPS 21" Borderless Monitor', warranty_month: 36, status: 1 },
+    { model_id: 4, category_id: 3, category_name: 'TV', brand: 'INVO', model_no: 'INV-32LED', product_name: 'INVO 32" HD Ready Smart LED TV', warranty_month: 24, status: 1 },
+    { model_id: 5, category_id: 4, category_name: 'Interactive Panel', brand: 'INVO', model_no: 'INIP-75IFP', product_name: 'INVO 75" 4K UHD Interactive Flat Panel', warranty_month: 36, status: 1 },
+    { model_id: 6, category_id: 5, category_name: 'LED Bulb', brand: 'INVO', model_no: 'INB09WW', product_name: 'INVO 60W Heavy Duty LED Bulb', warranty_month: 12, status: 1 },
+    { model_id: 7, category_id: 6, category_name: 'ALL IN ONE PC', brand: 'INVO', model_no: 'IN22-0125DS', product_name: 'INVO All In One PC 23.8" FHD i3', warranty_month: 36, status: 1 }
+  ];
 
   transfers: StockTransfer[] = [];
   extensions: ExtensionRequest[] = [];
-  invoices: Invoice[] = [];
-  inventory: InventoryUnit[] = [];
+  invoices: Invoice[] = [
+    { invoice_id: 1, invoice_no: 'INV-CG-012501', invoice_date: '2026-11-06', customer_id: 1, customer_name: 'C TRIBLE DIPARTMEN', seller_party_id: 2, seller_party_name: 'In-vo it industry pvt. Ltd.', sale_type: 'DISTRIBUTOR', total_qty: 1, serial_no: 'IN22135001' }
+  ];
+  inventory: InventoryUnit[] = [
+    // ALL IN ONE PC (From Reference Image: Sold to AC TRIBLE DIPARTMENT)
+    { unit_id: 11, category_id: 6, category_name: 'ALL IN ONE PC', model_no: 'IN22-0125DS', product_name: 'INVO All In One PC 23.8" FHD i3', serial_no: 'IN22I35001', warranty_months: 36, specs: { cabinet_sn: 'CX90917212', cabinet_warr: 12, motherboard_sn: 'H61M1112C09S4874', motherboard_warr: 36, ram_sn: '1.2E+07', ram_size: '16 GB', ram_warr: 36, ssd_sn: '12050043', ssd_size: '512 GB', ssd_warr: 36, processor: 'i3 12th gen', processor_sn: 'U6692PF301300', processor_warr: 36, monitor_sn: '9I0072508000BC', screen_size: '23.8" FHD IPS', monitor_warr: 36, mouse_sn: '500001', mouse_warr: 12, keyboard_sn: '250001', keyboard_warr: 12, graphic_card_sn: 'ZAK11PW01704', graphic_card_warr: 36 }, status: 'SOLD', assigned_party_id: 2, assigned_party_name: 'In-vo it industry pvt. Ltd.', dispatch_date: '2026-10-01', sale_info: { invoice_no: 'INV-CG-012501', invoice_date: '2026-11-06', customer_name: 'AC TRIBLE DIPARTMENT', zila: 'BILASPUR', seller_party_id: 2, seller_party_name: 'In-vo it industry pvt. Ltd.', sale_type: 'DISTRIBUTOR', warranty_start: '2026-11-06', warranty_end: '2029-11-06' } },
+    { unit_id: 12, category_id: 6, category_name: 'ALL IN ONE PC', model_no: 'IN22-0125DS', product_name: 'INVO All In One PC 23.8" FHD i3', serial_no: 'IN22I35002', warranty_months: 36, specs: { cabinet_sn: 'CX90918108', cabinet_warr: 12, motherboard_sn: 'H61M1112C09S4894', motherboard_warr: 36, ram_sn: '1.2E+07', ram_size: '16 GB', ram_warr: 36, ssd_sn: '12050028', ssd_size: '512 GB', ssd_warr: 36, processor: 'i3 12th gen', processor_sn: 'U6692PF301274', processor_warr: 36, monitor_sn: '9I00725100014A', screen_size: '23.8" FHD IPS', monitor_warr: 36, mouse_sn: '500002', mouse_warr: 12, keyboard_sn: '250002', keyboard_warr: 12, graphic_card_sn: 'ZAK11PW01705', graphic_card_warr: 36 }, status: 'IN_STOCK', assigned_party_id: 2, assigned_party_name: 'In-vo it industry pvt. Ltd.', dispatch_date: '2026-10-01', sale_info: null },
+    { unit_id: 1, category_id: 1, category_name: 'Computer', model_no: 'IN22-0125DS', product_name: 'INVO Entry Level Desktop i3 12th Gen', serial_no: 'IN22135001', warranty_months: 36, specs: { cabinet_sn: 'CX90917212', motherboard_sn: 'H61M1112C09S4874', ram_sn: '12050063', ram_size: '16 GB', ssd_sn: '12050043', ssd_size: '512 GB', processor: 'i3 12th gen', processor_sn: 'U6692PF301300' }, status: 'SOLD', assigned_party_id: 2, assigned_party_name: 'In-vo it industry pvt. Ltd.', dispatch_date: '2026-10-01', sale_info: { invoice_no: 'INV-CG-012501', invoice_date: '2026-11-06', customer_name: 'C TRIBLE DIPARTMEN', zila: 'BILASPUR', seller_party_id: 2, seller_party_name: 'In-vo it industry pvt. Ltd.', sale_type: 'DISTRIBUTOR', warranty_start: '2026-11-06', warranty_end: '2029-11-06' } },
+    { unit_id: 2, category_id: 1, category_name: 'Computer', model_no: 'IN22-0125DS', product_name: 'INVO Entry Level Desktop i3 12th Gen', serial_no: 'IN22135002', warranty_months: 36, specs: { cabinet_sn: 'CX90918108', motherboard_sn: 'H61M1112C09S4894', ram_sn: '12050062', ram_size: '16 GB', ssd_sn: '12050028', ssd_size: '512 GB', processor: 'i3 12th gen', processor_sn: 'U6692PF301274' }, status: 'IN_STOCK', assigned_party_id: 2, assigned_party_name: 'In-vo it industry pvt. Ltd.', dispatch_date: '2026-10-01', sale_info: null },
+    { unit_id: 3, category_id: 2, category_name: 'Monitor', model_no: 'INM-21IPS', product_name: 'INVO IPS 21" Borderless Monitor', serial_no: '910072508000BC', warranty_months: 36, specs: { screen_size: '21"', panel_type: 'IPS Full HD', monitor_sn: '910072508000BC' }, status: 'SOLD', assigned_party_id: 3, assigned_party_name: 'R. P. ENTERPRISES', dispatch_date: '2026-03-01', sale_info: { invoice_no: 'INV-RP-2026-001', invoice_date: '2026-03-15', customer_name: 'AC TRIBLE DIPARTMENT', zila: 'BILASPUR', seller_party_id: 3, seller_party_name: 'R. P. ENTERPRISES', sale_type: 'DISTRIBUTOR', warranty_start: '2026-03-15', warranty_end: '2029-03-15' } },
+    { unit_id: 4, category_id: 2, category_name: 'Monitor', model_no: 'INM-21IPS', product_name: 'INVO IPS 21" Borderless Monitor', serial_no: '9100725100014A', warranty_months: 36, specs: { screen_size: '21"', panel_type: 'IPS Full HD', monitor_sn: '9100725100014A' }, status: 'IN_STOCK', assigned_party_id: 3, assigned_party_name: 'R. P. ENTERPRISES', dispatch_date: '2026-03-01', sale_info: null },
+    { unit_id: 5, category_id: 3, category_name: 'TV', model_no: 'INV-32LED', product_name: 'INVO 32" HD Ready Smart LED TV', serial_no: 'INTV08265001', warranty_months: 24, specs: { screen_size: '32"', motherboard_sn: 'EBT67356202', panel_sn: 'PNL-LG-32HD-001' }, status: 'SOLD', assigned_party_id: 4, assigned_party_name: 'M. R. ENTERPRISES', dispatch_date: '2026-01-20', sale_info: { invoice_no: 'INV-MR-5001', invoice_date: '2026-02-05', customer_name: 'AC TRIBLE DIPARTMENT', zila: 'BILASPUR', seller_party_id: 4, seller_party_name: 'M. R. ENTERPRISES', sale_type: 'DISTRIBUTOR', warranty_start: '2026-02-05', warranty_end: '2028-02-05' } },
+    { unit_id: 6, category_id: 3, category_name: 'TV', model_no: 'INV-32LED', product_name: 'INVO 32" HD Ready Smart LED TV', serial_no: 'INTV08265002', warranty_months: 24, specs: { screen_size: '32"', motherboard_sn: 'EBT67356203', panel_sn: 'PNL-LG-32HD-002' }, status: 'IN_STOCK', assigned_party_id: 4, assigned_party_name: 'M. R. ENTERPRISES', dispatch_date: '2026-01-20', sale_info: null },
+    { unit_id: 7, category_id: 4, category_name: 'Interactive Panel', model_no: 'INIP-75IFP', product_name: 'INVO 75" 4K UHD Interactive Flat Panel', serial_no: 'INIP-75IFP082600142', warranty_months: 36, specs: { ram: '8 GB', rom: '64 GB', ops_serial: '530001', ops_ram: '8 GB', ops_rom: '512 GB' }, status: 'SOLD', assigned_party_id: 5, assigned_party_name: 'Gunjan Industry', dispatch_date: '2026-10-15', sale_info: { invoice_no: 'INV-GUNJAN-142', invoice_date: '2026-11-03', customer_name: 'AC TRIBLE DIPARTMENT', zila: 'BILASPUR', seller_party_id: 5, seller_party_name: 'Gunjan Industry', sale_type: 'DISTRIBUTOR', warranty_start: '2026-11-03', warranty_end: '2029-11-03' } },
+    { unit_id: 8, category_id: 4, category_name: 'Interactive Panel', model_no: 'INIP-75IFP', product_name: 'INVO 75" 4K UHD Interactive Flat Panel', serial_no: 'INIP-75IFP082600143', warranty_months: 36, specs: { ram: '8 GB', rom: '64 GB', ops_serial: '530001', ops_ram: '8 GB', ops_rom: '512 GB' }, status: 'IN_STOCK', assigned_party_id: 5, assigned_party_name: 'Gunjan Industry', dispatch_date: '2026-10-15', sale_info: null },
+    { unit_id: 9, category_id: 5, category_name: 'LED Bulb', model_no: 'INB09WW', product_name: 'INVO 60W Heavy Duty LED Bulb', serial_no: 'IN-P10926001', warranty_months: 12, specs: { watt: '60W', color: 'Cool Daylight 6500K' }, status: 'SOLD', assigned_party_id: 6, assigned_party_name: 'star enterprises', dispatch_date: '2026-04-10', sale_info: { invoice_no: 'INV-STAR-9001', invoice_date: '2026-05-05', customer_name: 'AC TRIBLE DIPARTMENT', zila: 'BILASPUR', seller_party_id: 6, seller_party_name: 'star enterprises', sale_type: 'DISTRIBUTOR', warranty_start: '2026-05-05', warranty_end: '2027-05-05' } },
+    { unit_id: 10, category_id: 5, category_name: 'LED Bulb', model_no: 'INB09WW', product_name: 'INVO 60W Heavy Duty LED Bulb', serial_no: 'IN-P10926002', warranty_months: 12, specs: { watt: '60W', color: 'Cool Daylight 6500K' }, status: 'IN_STOCK', assigned_party_id: 6, assigned_party_name: 'star enterprises', dispatch_date: '2026-04-10', sale_info: null }
+  ];
 
-  // Multi-Product Entry Form Model
   newProductEntry = {
     category_id: 1,
     model_no: 'IN22-0125DS',
@@ -223,7 +293,6 @@ export class AdminComponent implements OnInit {
     serial_no: '',
     warranty_months: 36,
     specs: {
-      // Computer specs with individual part warranty duration (months)
       cabinet_sn: '',
       cabinet_warr: 12,
       motherboard_sn: '',
@@ -245,50 +314,83 @@ export class AdminComponent implements OnInit {
       keyboard_warr: 12,
       graphic_card_sn: '',
       graphic_card_warr: 36,
-      // Monitor specs
       screen_size: '21"',
       panel_type: 'IPS Full HD',
-      // TV specs
       tv_motherboard_sn: '',
       tv_screen_size: '32"',
-      // Interactive Panel specs
       panel_ram: '8 GB',
       panel_rom: '64 GB',
       ops_serial: '',
       ops_ram: '8 GB',
       ops_rom: '512 GB',
-      // LED Bulb specs
       watt: '60W',
       color: 'Cool Daylight 6500K'
     },
     action: 'ALLOCATE' as 'ALLOCATE' | 'DIRECT_SALE',
     to_party_id: 2,
     dispatch_date: new Date().toISOString().split('T')[0],
-    // Direct sale fields
     invoice_no: '',
     invoice_date: new Date().toISOString().split('T')[0],
     customer_name: 'AC TRIBLE DIPARTMENT',
     zila: 'BILASPUR'
   };
 
-  // Other quick forms
-  newParty = { party_type: 'DISTRIBUTOR' as 'OEM' | 'DISTRIBUTOR', party_name: '', gst_no: '', contact_person: '', mobile: '', email: '', password: 'dist123', address: '', district: 'BILASPUR', state: 'Chhattisgarh', pincode: '495001' };
-  newModel = { category_id: 1, brand: 'INVO', model_no: '', product_name: '', warranty_month: 24 };
-  newTransfer = { to_party_id: 2, model_id: 1, serial_no: '', dispatch_date: new Date().toISOString().split('T')[0], remarks: '' };
-  newCustomer = { customer_name: '', department: '', contact_person: '', mobile: '', email: '', address: '', district: 'BILASPUR', state: 'Chhattisgarh', pincode: '495001' };
+  newParty = {
+    party_type: 'DISTRIBUTOR' as 'OEM' | 'DISTRIBUTOR',
+    party_name: '',
+    gst_no: '',
+    contact_person: '',
+    mobile: '',
+    email: '',
+    password: 'dist123',
+    address: '',
+    district: 'BILASPUR',
+    state: 'Chhattisgarh',
+    pincode: '495001'
+  };
 
-  ngOnInit() {
-    this.fetchDataFromApi();
-    this.onCategorySelectChange();
-  }
+  newModel = {
+    category_id: 1,
+    brand: 'INVO',
+    model_no: '',
+    product_name: '',
+    warranty_month: 24
+  };
+
+  newTransfer = {
+    to_party_id: 2,
+    model_id: 1,
+    serial_no: '',
+    dispatch_date: new Date().toISOString().split('T')[0],
+    remarks: ''
+  };
+
+  newCustomer = {
+    customer_name: '',
+    department: '',
+    contact_person: '',
+    mobile: '',
+    email: '',
+    address: '',
+    district: 'BILASPUR',
+    state: 'Chhattisgarh',
+    pincode: '495001'
+  };
+
+  isLoadingData = false;
 
   fetchDataFromApi() {
-    fetch(`${environment.apiUrl}/categories`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.categories = data; }).catch(() => {});
-    fetch(`${environment.apiUrl}/parties`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.parties = data; }).catch(() => {});
-    fetch(`${environment.apiUrl}/models`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.models = data; }).catch(() => {});
-    fetch(`${environment.apiUrl}/inventory`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.inventory = data; }).catch(() => {});
-    fetch(`${environment.apiUrl}/invoices`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.invoices = data; }).catch(() => {});
-    fetch(`${environment.apiUrl}/customers`).then(r => r.json()).then(data => { if (Array.isArray(data)) this.customers = data; }).catch(() => {});
+    this.isLoadingData = true;
+    Promise.all([
+      fetch(`${environment.apiUrl}/categories`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.categories = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/parties`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.parties = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/models`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.models = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/inventory`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.inventory = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/invoices`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.invoices = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/customers`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.customers = data; }).catch(() => {})
+    ]).finally(() => {
+      this.isLoadingData = false;
+    });
     this.fetchSubUsers();
   }
 
@@ -472,6 +574,16 @@ export class AdminComponent implements OnInit {
       this.newProductEntry.product_name = 'INVO Entry Level Desktop i3 12th Gen';
       this.newProductEntry.warranty_months = 36;
       this.newProductEntry.to_party_id = 2; // In-vo it industry
+    } else if (catId === 6) {
+      // ALL IN ONE PC (From Reference Image)
+      this.newProductEntry.model_no = 'IN22-0125DS';
+      this.newProductEntry.product_name = 'INVO All In One PC 23.8" FHD i3';
+      this.newProductEntry.warranty_months = 36;
+      this.newProductEntry.to_party_id = 2; // In-vo it industry
+      this.newProductEntry.specs.processor = 'i3 12th gen';
+      this.newProductEntry.specs.ram_size = '16 GB';
+      this.newProductEntry.specs.ssd_size = '512 GB';
+      this.newProductEntry.specs.screen_size = '23.8" FHD IPS';
     } else if (catId === 2) {
       // Monitor
       this.newProductEntry.model_no = 'INM-21IPS';
@@ -550,7 +662,7 @@ export class AdminComponent implements OnInit {
     const catId = Number(this.newProductEntry.category_id);
     let finalSpecs: any = {};
 
-    if (catId === 1) {
+    if (catId === 1 || catId === 6) {
       finalSpecs = {
         cabinet_sn: this.newProductEntry.specs.cabinet_sn,
         cabinet_warr: Number(this.newProductEntry.specs.cabinet_warr || 12),
@@ -566,6 +678,7 @@ export class AdminComponent implements OnInit {
         processor_sn: this.newProductEntry.specs.processor_sn,
         processor_warr: Number(this.newProductEntry.specs.processor_warr || 36),
         monitor_sn: this.newProductEntry.specs.monitor_sn,
+        screen_size: this.newProductEntry.specs.screen_size,
         monitor_warr: Number(this.newProductEntry.specs.monitor_warr || 36),
         mouse_sn: this.newProductEntry.specs.mouse_sn,
         mouse_warr: Number(this.newProductEntry.specs.mouse_warr || 12),

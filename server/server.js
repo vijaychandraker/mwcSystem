@@ -23,21 +23,32 @@ app.use('/api', apiRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'MWC System API', timestamp: new Date() });
+  res.json({ status: 'ok', service: 'INVO IT API', timestamp: new Date() });
 });
 
 // Production: Serve Angular static build if present
 const distPath = path.join(__dirname, '../dist/mwc-portal/browser');
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
+const parentPath = path.join(__dirname, '..');
+let staticFolder = null;
+
+if (fs.existsSync(path.join(__dirname, 'index.html'))) {
+  staticFolder = __dirname;
+} else if (fs.existsSync(path.join(distPath, 'index.html'))) {
+  staticFolder = distPath;
+} else if (fs.existsSync(path.join(parentPath, 'index.html'))) {
+  staticFolder = parentPath;
+}
+
+if (staticFolder) {
+  app.use(express.static(staticFolder));
   // Any route not caught by /api or static files returns Angular's index.html
   app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+    res.sendFile(path.join(staticFolder, 'index.html'));
   });
 }
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 MWC System Backend API & Web Server running at http://localhost:${PORT}`);
+  console.log(`\n🚀 INVO IT Backend API & Web Server running at http://localhost:${PORT}`);
   console.log(`   - Frontend Portal:    http://localhost:${PORT}`);
   console.log(`   - Warranty Check API: GET http://localhost:${PORT}/api/warranty/:serialNumber`);
   console.log(`   - Products API:       GET http://localhost:${PORT}/api/products\n`);

@@ -9,11 +9,11 @@ import { CommonModule } from '@angular/common';
 })
 export class ServiceComponent {
   services = [
-    { icon: 'build', title: 'Installation', desc: 'Professional installation by trained technicians at your doorstep.' },
-    { icon: 'engineering', title: 'Annual Maintenance', desc: 'Comprehensive AMC plans to keep your products running efficiently.' },
-    { icon: 'swap_horiz', title: 'Filter Replacement', desc: 'Timely filter and cartridge replacements with genuine parts.' },
-    { icon: 'local_shipping', title: 'Doorstep Service', desc: 'Convenient home service with scheduled appointments.' },
-    { icon: 'tune', title: 'Water Quality Testing', desc: 'Free water quality analysis and purifier recommendations.' },
-    { icon: 'recycling', title: 'Product Upgrade', desc: 'Exchange old products for new with attractive trade-in offers.' }
+    { icon: 'settings_suggest', title: 'Hardware Setup & Deployment', desc: 'Professional installation, OS deployment, and network integration at your institution or office.' },
+    { icon: 'engineering', title: 'Annual Maintenance (AMC)', desc: 'Comprehensive AMC coverage for desktops, AIOs, interactive flat panels, and displays.' },
+    { icon: 'memory', title: 'Component Upgrades & Repairs', desc: 'RAM, SSD, processor, and display replacements using certified genuine parts.' },
+    { icon: 'home_repair_service', title: 'On-Site Technical Support', desc: 'Prompt doorstep and campus engineer visits with scheduled appointment tracking.' },
+    { icon: 'speed', title: 'Diagnostics & Performance Tuning', desc: 'Hardware benchmarking, display calibration, and thermal health checks.' },
+    { icon: 'devices', title: 'IT Lifecycle Upgrades', desc: 'Modernize legacy office and school IT infrastructure with scalable upgrade programs.' }
   ];
 }

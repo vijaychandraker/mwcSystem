@@ -1,153 +1,221 @@
-<section class="admin-page">
-  <!-- Top Banner -->
-  <div class="admin-header">
-    <div class="admin-header-container">
-      <div class="admin-title-area">
-        <span class="material-icons-outlined admin-badge-icon">admin_panel_settings</span>
-        <div>
-          <h1>MWC Administration Portal</h1>
-          <p>Serial Number Registry & Warranty Management | INVO IT Industries Pvt. Ltd.</p>
-        </div>
+<section class="admin-portal-layout">
+  <!-- ============================================== -->
+  <!-- 1. LEFT SIDEBAR (ENTERPRISE SIDE VIEW MENU)   -->
+  <!-- ============================================== -->
+  <aside class="admin-sidebar" [class.mobile-open]="isSidebarOpen">
+    <!-- Brand & Portal Identity -->
+    <div class="sidebar-brand-block">
+      <div class="brand-badge-icon">
+        <span class="material-icons-outlined">admin_panel_settings</span>
       </div>
-
-      <!-- Quick Search Bar & Action -->
-      <div class="admin-header-actions">
-        <div class="admin-search-bar">
-          <span class="material-icons-outlined search-icon">search</span>
-          <input
-            type="text"
-            [(ngModel)]="searchQuery"
-            placeholder="Search serial, component, invoice, dealer..."
-            class="admin-search-input"
-          />
-          @if (searchQuery) {
-            <button (click)="searchQuery = ''" class="clear-btn">
-              <span class="material-icons-outlined">close</span>
-            </button>
-          }
+      <div class="brand-text-block">
+        <div class="brand-name-row">
+          <span class="brand-name">INVO IT</span>
+          <span class="brand-badge">ADMIN</span>
         </div>
+        <span class="brand-caption">Registry & Warranty Portal</span>
+      </div>
+      <button class="sidebar-mobile-close" (click)="toggleSidebar(false)" title="Close Sidebar">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
 
-        <button class="btn-highlight-entry" (click)="openProductEntryModal()">
-          <span class="material-icons-outlined">add_circle</span>
-          + New Product Entry
+    <!-- Quick Action / Add Entry Button -->
+    <div class="sidebar-cta-wrap">
+      <button class="btn-sidebar-create" (click)="openProductEntryModal()">
+        <span class="material-icons-outlined">add_circle</span>
+        <span>+ Register Product</span>
+      </button>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <div class="sidebar-nav-container">
+      <div class="nav-group-label">NAVIGATION MENU</div>
+      <nav class="sidebar-menu">
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'overview'" (click)="selectTab('overview')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">dashboard</span>
+          </div>
+          <span class="menu-item-label">Overview</span>
         </button>
 
-        <!-- Logged-in Admin Profile & Logout -->
-        <div class="admin-user-pill">
-          <div class="admin-avatar">
-            <span class="material-icons-outlined">admin_panel_settings</span>
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'inventory'" (click)="selectTab('inventory')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">devices</span>
           </div>
-          <div class="admin-user-meta">
-            <span class="admin-user-name">{{ currentUser()?.displayName || 'Administrator' }}</span>
-            <span class="admin-user-role">Super Admin</span>
+          <span class="menu-item-label">Serials & Warranties</span>
+          <span class="menu-item-badge">{{ inventory.length }}</span>
+        </button>
+
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'parties'" (click)="selectTab('parties')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">storefront</span>
           </div>
-          <button (click)="logout()" class="btn-admin-logout" title="Sign out of Admin Portal">
-            <span class="material-icons-outlined">logout</span>
-            <span>Logout</span>
-          </button>
+          <span class="menu-item-label">Parties & Dealers</span>
+          <span class="menu-item-badge">{{ parties.length }}</span>
+        </button>
+
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'models'" (click)="selectTab('models')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">inventory_2</span>
+          </div>
+          <span class="menu-item-label">Product Models</span>
+          <span class="menu-item-badge">{{ models.length }}</span>
+        </button>
+
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'invoices'" (click)="selectTab('invoices')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">fact_check</span>
+          </div>
+          <span class="menu-item-label">Sales & Dispatches</span>
+          <span class="menu-item-badge">{{ invoices.length }}</span>
+        </button>
+
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'customers'" (click)="selectTab('customers')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">people</span>
+          </div>
+          <span class="menu-item-label">End Users & Clients</span>
+          <span class="menu-item-badge">{{ customers.length }}</span>
+        </button>
+
+        <button class="sidebar-menu-item" [class.active]="activeTab === 'users'" (click)="selectTab('users')">
+          <div class="menu-item-icon">
+            <span class="material-icons-outlined">manage_accounts</span>
+          </div>
+          <span class="menu-item-label">Sub-Users & Logins</span>
+          <span class="menu-item-badge highlight">{{ subUsers.length }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Live MariaDB Sync Status -->
+    <div class="sidebar-status-box">
+      <div class="status-top">
+        <div class="status-indicator-pill">
+          <span class="status-pulse"></span>
+          <span>MariaDB Live</span>
         </div>
+        <button class="btn-sync-icon" (click)="fetchDataFromApi()" title="Sync with MariaDB Database">
+          <span class="material-icons-outlined" [class.spinning]="isLoadingData">sync</span>
+        </button>
+      </div>
+      <div class="status-details">
+        <span>Connected to live server database</span>
       </div>
     </div>
-  </div>
 
-  <div class="admin-container">
-    <!-- Navigation Tabs -->
-    <div class="admin-tabs">
-      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
-        <span class="material-icons-outlined">dashboard</span>
-        Overview
-      </button>
-
-      <button class="tab-btn" [class.active]="activeTab === 'inventory'" (click)="activeTab = 'inventory'">
-        <span class="material-icons-outlined">devices</span>
-        Serials & Warranties ({{ inventory.length }})
-      </button>
-
-      <button class="tab-btn" [class.active]="activeTab === 'parties'" (click)="activeTab = 'parties'">
-        <span class="material-icons-outlined">storefront</span>
-        Parties & Dealers ({{ parties.length }})
-      </button>
-
-      <button class="tab-btn" [class.active]="activeTab === 'models'" (click)="activeTab = 'models'">
-        <span class="material-icons-outlined">inventory_2</span>
-        Product Models ({{ models.length }})
-      </button>
-
-      <button class="tab-btn" [class.active]="activeTab === 'invoices'" (click)="activeTab = 'invoices'">
-        <span class="material-icons-outlined">fact_check</span>
-        Sales & Dispatches ({{ invoices.length }})
-      </button>
-
-      <button class="tab-btn" [class.active]="activeTab === 'customers'" (click)="activeTab = 'customers'">
-        <span class="material-icons-outlined">people</span>
-        End Users & Clients ({{ customers.length }})
-      </button>
-
-      <button class="tab-btn badge-tab" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
-        <span class="material-icons-outlined">manage_accounts</span>
-        Sub-Users & Logins ({{ subUsers.length }})
+    <!-- Sidebar Bottom User Profile & Logout -->
+    <div class="sidebar-user-footer">
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-avatar">
+          <span class="material-icons-outlined">shield</span>
+        </div>
+        <div class="sidebar-user-meta">
+          <span class="user-display-name">{{ currentUser()?.displayName || 'Administrator' }}</span>
+          <span class="user-role-badge">SUPER ADMIN</span>
+        </div>
+      </div>
+      <button class="btn-logout-icon" (click)="promptLogout()" title="Logout from Portal">
+        <span class="material-icons-outlined">logout</span>
       </button>
     </div>
+  </aside>
+
+  <!-- Mobile Backdrop Overlay -->
+  @if (isSidebarOpen) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar(false)"></div>
+  }
+
+  <!-- ============================================== -->
+  <!-- 2. RIGHT VIEWPORT & MAIN WORKSPACE            -->
+  <!-- ============================================== -->
+  <main class="admin-main-viewport">
+    <!-- Mobile-Only Navigation Bar -->
+    <div class="mobile-only-header">
+      <button class="btn-hamburger" (click)="toggleSidebar(true)" title="Toggle Navigation Menu">
+        <span class="material-icons-outlined">menu</span>
+        <span>Menu</span>
+      </button>
+      <span class="mobile-header-title">{{ currentTabTitle }}</span>
+    </div>
+
+    <!-- Main Content Canvas -->
+    <div class="admin-content-canvas">
 
     <!-- 1. OVERVIEW TAB -->
     @if (activeTab === 'overview') {
       <div class="overview-grid animate-fade-in">
-        <!-- KPI Cards -->
+        <!-- KPI Card 1: Registered Serials -->
         <div class="kpi-card blue" (click)="activeTab = 'inventory'">
-          <div class="kpi-icon">
-            <span class="material-icons-outlined">devices</span>
+          <div class="kpi-card-header">
+            <span class="kpi-label">TOTAL REGISTERED UNITS</span>
+            <div class="kpi-icon">
+              <span class="material-icons-outlined">devices</span>
+            </div>
           </div>
-          <div class="kpi-info">
+          <div class="kpi-value-row">
             <span class="kpi-value">{{ inventory.length }}</span>
-            <span class="kpi-label">Total Registered Serials</span>
+          </div>
+          <div class="kpi-footer-pill">
+            <span class="pill-dot stock-dot"></span> In Stock: <strong>{{ inStockUnitsCount }}</strong>
+            <span class="pill-sep">•</span>
+            <span class="pill-dot sold-dot"></span> Sold: <strong>{{ soldUnitsCount }}</strong>
           </div>
         </div>
 
+        <!-- KPI Card 2: Active Warranties -->
         <div class="kpi-card green" (click)="activeTab = 'inventory'">
-          <div class="kpi-icon">
+          <div class="kpi-card-header">
+            <span class="kpi-label">ACTIVE WARRANTIES</span>
+            <div class="kpi-icon">
+              <span class="material-icons-outlined">verified_user</span>
+            </div>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ soldUnitsCount || inventory.length }}</span>
+          </div>
+          <div class="kpi-footer-pill success-pill">
             <span class="material-icons-outlined">verified</span>
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-value">{{ inventory.length }}</span>
-            <span class="kpi-label">Active Product Warranties</span>
+            <span>Customer Active Coverage</span>
           </div>
         </div>
 
+        <!-- KPI Card 3: Authorized Dealers -->
         <div class="kpi-card purple" (click)="activeTab = 'parties'">
-          <div class="kpi-icon">
-            <span class="material-icons-outlined">business</span>
+          <div class="kpi-card-header">
+            <span class="kpi-label">AUTHORIZED DEALERS</span>
+            <div class="kpi-icon">
+              <span class="material-icons-outlined">storefront</span>
+            </div>
           </div>
-          <div class="kpi-info">
+          <div class="kpi-value-row">
             <span class="kpi-value">{{ activeDistributorsCount }}</span>
-            <span class="kpi-label">Authorized Distributors</span>
+          </div>
+          <div class="kpi-footer-pill purple-pill">
+            <span class="material-icons-outlined">hub</span>
+            <span>Bilaspur & CG Dealer Network</span>
           </div>
         </div>
 
+        <!-- KPI Card 4: Product Models -->
         <div class="kpi-card orange" (click)="activeTab = 'models'">
-          <div class="kpi-icon">
-            <span class="material-icons-outlined">category</span>
+          <div class="kpi-card-header">
+            <span class="kpi-label">PRODUCT MODELS DIRECTORY</span>
+            <div class="kpi-icon">
+              <span class="material-icons-outlined">category</span>
+            </div>
           </div>
-          <div class="kpi-info">
+          <div class="kpi-value-row">
             <span class="kpi-value">{{ models.length }}</span>
-            <span class="kpi-label">Product Models</span>
+          </div>
+          <div class="kpi-footer-pill orange-pill">
+            <span class="material-icons-outlined">grid_view</span>
+            <span>5 Active Hardware Categories</span>
           </div>
         </div>
       </div>
 
-      <!-- Quick Action Callout -->
-      <div class="action-banner-card animate-fade-in">
-        <div class="action-banner-text">
-          <span class="material-icons-outlined banner-star">verified_user</span>
-          <div>
-            <h3>Register Product Serial with Component Specifications & Warranty</h3>
-            <p>Enter Computer, Monitor, TV, Interactive Panel or LED Bulb units with official warranty and customer/dealer assignment.</p>
-          </div>
-        </div>
-        <button class="btn-primary-lg" (click)="openProductEntryModal()">
-          <span class="material-icons-outlined">add_box</span>
-          Register New Serial
-        </button>
-      </div>
 
       <!-- Overview Tables -->
       <div class="overview-tables animate-fade-in">
@@ -268,8 +336,8 @@
                   </td>
                   <td class="specs-cell">
                     <!-- Dynamic Component Specs -->
-                    @if (item.category_id === 1) {
-                      <!-- Computer -->
+                    @if (item.category_id === 1 || item.category_id === 6) {
+                      <!-- Computer & ALL IN ONE PC -->
                       <div class="spec-tag-list">
                         <span>CPU: <strong>{{ item.specs.processor }}</strong> ({{ item.specs.processor_sn || 'N/A' }}) <span class="part-warr-badge">{{ item.specs.processor_warr || item.warranty_months }}M</span></span>
                         <span>MB: {{ item.specs.motherboard_sn }} <span class="part-warr-badge">{{ item.specs.motherboard_warr || item.warranty_months }}M</span></span>
@@ -928,7 +996,8 @@
         </div>
       </div>
     }
-  </div>
+    </div>
+  </main>
 
   <!-- ==================================================== -->
   <!-- MODAL: MULTI-PRODUCT ENTRY & ALLOCATION / DIRECT SALE -->
@@ -941,7 +1010,7 @@
             <span class="material-icons-outlined modal-icon">add_to_photos</span>
             <div>
               <h3>Product Entry with Component Specs & Warranty</h3>
-              <p>Add Computer, Monitor, TV, Interactive Panel, or LED Bulb & allocate or sell directly</p>
+              <p>Add Computer, ALL IN ONE PC, Monitor, TV, Interactive Panel, or LED Bulb & allocate or sell directly</p>
             </div>
           </div>
           <button (click)="showProductEntryModal = false" class="close-btn">&times;</button>
@@ -980,12 +1049,12 @@
 
             <div class="form-group">
               <label>Model Number *</label>
-              <input type="text" [(ngModel)]="newProductEntry.model_no" name="entryModelNo" placeholder="e.g. IN22-0125DS" required />
+              <input type="text" [(ngModel)]="newProductEntry.model_no" name="entryModelNo" placeholder="e.g. IN22-0125DS or INVO-AIO24" required />
             </div>
 
             <div class="form-group">
               <label>Product Title</label>
-              <input type="text" [(ngModel)]="newProductEntry.product_name" name="entryProductName" placeholder="e.g. INVO Desktop i3 12th Gen" />
+              <input type="text" [(ngModel)]="newProductEntry.product_name" name="entryProductName" placeholder="e.g. INVO All In One PC 23.8&quot; FHD i3" />
             </div>
           </div>
 
@@ -1002,7 +1071,7 @@
                 type="text"
                 [(ngModel)]="newProductEntry.serial_no"
                 name="entrySerialNo"
-                placeholder="e.g. IN22135001 or 910072508000BC"
+                placeholder="e.g. IN22I35001 or IN22135001"
                 required
                 class="highlight-input"
               />
@@ -1025,8 +1094,8 @@
             <h4>Component Specifications & Individual Part Warranty</h4>
           </div>
 
-          <!-- CATEGORY 1: COMPUTER -->
-          @if (newProductEntry.category_id == 1) {
+          <!-- CATEGORY 1 & 6: COMPUTER & ALL IN ONE PC -->
+          @if (newProductEntry.category_id == 1 || newProductEntry.category_id == 6) {
             <!-- Batch Warranty Toolbar -->
             <div class="parts-batch-bar animate-fade-in">
               <div class="batch-bar-left">
@@ -1155,12 +1224,12 @@
                 </div>
               </div>
 
-              <!-- 5. Cabinet & SMPS -->
+              <!-- 5. Cabinet & SMPS / AIO Chassis -->
               <div class="part-card">
                 <div class="part-card-header">
                   <div class="part-title">
                     <span class="material-icons-outlined">desktop_windows</span>
-                    <span>Cabinet & Power Supply</span>
+                    <span>{{ newProductEntry.category_id == 6 ? 'AIO Chassis / Body & SMPS' : 'Cabinet & Power Supply' }}</span>
                   </div>
                   <div class="part-warranty-box">
                     <label>Warranty:</label>
@@ -1173,18 +1242,18 @@
                 </div>
                 <div class="part-fields-row">
                   <div class="form-group flex-full">
-                    <label>Cabinet Serial No.</label>
+                    <label>{{ newProductEntry.category_id == 6 ? 'AIO Chassis / Cabinet Serial No.' : 'Cabinet Serial No.' }}</label>
                     <input type="text" [(ngModel)]="newProductEntry.specs.cabinet_sn" name="compCabinet" placeholder="e.g. CX90917212" />
                   </div>
                 </div>
               </div>
 
-              <!-- 6. Monitor Screen -->
+              <!-- 6. Monitor Screen / Built-in Display -->
               <div class="part-card">
                 <div class="part-card-header">
                   <div class="part-title">
                     <span class="material-icons-outlined">tv</span>
-                    <span>Monitor Screen</span>
+                    <span>{{ newProductEntry.category_id == 6 ? 'Built-in Display Screen (AIO Monitor)' : 'Monitor Screen' }}</span>
                   </div>
                   <div class="part-warranty-box">
                     <label>Warranty:</label>
@@ -1197,10 +1266,16 @@
                   </div>
                 </div>
                 <div class="part-fields-row">
-                  <div class="form-group flex-full">
-                    <label>Monitor Serial No.</label>
-                    <input type="text" [(ngModel)]="newProductEntry.specs.monitor_sn" name="compMonitorSn" placeholder="e.g. 910072508000BC" />
+                  <div class="form-group flex-2">
+                    <label>{{ newProductEntry.category_id == 6 ? 'Display Panel Serial No.' : 'Monitor Serial No.' }}</label>
+                    <input type="text" [(ngModel)]="newProductEntry.specs.monitor_sn" name="compMonitorSn" placeholder="e.g. 9I0072508000BC" />
                   </div>
+                  @if (newProductEntry.category_id == 6) {
+                    <div class="form-group">
+                      <label>Display Size & Panel</label>
+                      <input type="text" [(ngModel)]="newProductEntry.specs.screen_size" name="compScreenSize" placeholder="23.8&quot; FHD IPS" />
+                    </div>
+                  }
                 </div>
               </div>
 

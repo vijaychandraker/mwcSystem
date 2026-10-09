@@ -89,6 +89,12 @@ async function initTables() {
     try {
       await conn.query("UPDATE admin_users SET role = 'SUB_USER' WHERE role != 'DISTRIBUTOR'");
     } catch (e) {}
+    try {
+      await conn.query("INSERT INTO mst_category (category_id, category_name) VALUES (6, 'ALL IN ONE PC') ON DUPLICATE KEY UPDATE category_name = VALUES(category_name)");
+    } catch (e) {}
+    try {
+      await conn.query("INSERT INTO mst_product_model (model_id, category_id, brand, model_no, product_name, warranty_month, status) VALUES (9, 6, 'INVO', 'INVO-AIO24', 'INVO All In One Computer 23.8\" FHD', 36, 1) ON DUPLICATE KEY UPDATE category_id = 6, model_no = VALUES(model_no), product_name = VALUES(product_name)");
+    } catch (e) {}
   } catch (err) {
     // MariaDB may be offline or in mock mode
   } finally {
@@ -100,6 +106,7 @@ initTables();
 // 2. MASTER CATEGORIES
 const MOCK_CATEGORIES = [
   { category_id: 1, category_name: 'Computer' },
+  { category_id: 6, category_name: 'ALL IN ONE PC' },
   { category_id: 2, category_name: 'Monitor' },
   { category_id: 3, category_name: 'TV' },
   { category_id: 4, category_name: 'Interactive Panel' },
@@ -109,16 +116,105 @@ const MOCK_CATEGORIES = [
 // 3. MASTER MODELS
 let MOCK_PRODUCT_MODELS = [
   { model_id: 1, category_id: 1, category_name: 'Computer', brand: 'INVO', model_no: 'IN22-0125DS', product_name: 'INVO Entry Level Desktop i3 12th Gen', warranty_month: 36, status: 1 },
-  { model_id: 2, category_id: 1, category_name: 'Computer', brand: 'INVO', model_no: 'INVO-AIO24', product_name: 'INVO All In One Computer 23.8" FHD', warranty_month: 24, status: 1 },
+  { model_id: 2, category_id: 6, category_name: 'ALL IN ONE PC', brand: 'INVO', model_no: 'INVO-AIO24', product_name: 'INVO All In One Computer 23.8" FHD', warranty_month: 36, status: 1 },
   { model_id: 3, category_id: 2, category_name: 'Monitor', brand: 'INVO', model_no: 'INM-21IPS', product_name: 'INVO IPS 21" Borderless Monitor', warranty_month: 36, status: 1 },
   { model_id: 4, category_id: 3, category_name: 'TV', brand: 'INVO', model_no: 'INV-32LED', product_name: 'INVO 32" HD Ready Smart LED TV', warranty_month: 24, status: 1 },
   { model_id: 5, category_id: 4, category_name: 'Interactive Panel', brand: 'INVO', model_no: 'INIP-75IFP', product_name: 'INVO 75" 4K UHD Interactive Flat Panel', warranty_month: 36, status: 1 },
-  { model_id: 6, category_id: 5, category_name: 'LED Bulb', brand: 'INVO', model_no: 'INB09WW', product_name: 'INVO 60W Heavy Duty LED Bulb', warranty_month: 12, status: 1 }
+  { model_id: 6, category_id: 5, category_name: 'LED Bulb', brand: 'INVO', model_no: 'INB09WW', product_name: 'INVO 60W Heavy Duty LED Bulb', warranty_month: 12, status: 1 },
+  { model_id: 7, category_id: 6, category_name: 'ALL IN ONE PC', brand: 'INVO', model_no: 'IN22-0125DS', product_name: 'INVO All In One PC 23.8" FHD i3', warranty_month: 36, status: 1 }
 ];
 
 // 4. INVENTORY UNITS WITH DETAILED COMPONENT SPECS & WARRANTY
 // Seeded with items from user Excel sheets
 let MOCK_INVENTORY = [
+  // ALL IN ONE PC 1 (From reference image: Sold to AC TRIBLE DIPARTMENT by In-vo it industry)
+  {
+    unit_id: 11,
+    category_id: 6,
+    category_name: 'ALL IN ONE PC',
+    model_no: 'IN22-0125DS',
+    product_name: 'INVO All In One PC 23.8" FHD i3',
+    serial_no: 'IN22I35001',
+    warranty_months: 36,
+    specs: {
+      cabinet_sn: 'CX90917212',
+      cabinet_warr: 12,
+      motherboard_sn: 'H61M1112C09S4874',
+      motherboard_warr: 36,
+      ram_sn: '1.2E+07',
+      ram_size: '16 GB',
+      ram_warr: 36,
+      ssd_sn: '12050043',
+      ssd_size: '512 GB',
+      ssd_warr: 36,
+      processor: 'i3 12th gen',
+      processor_sn: 'U6692PF301300',
+      processor_warr: 36,
+      monitor_sn: '9I0072508000BC',
+      screen_size: '23.8" FHD IPS',
+      monitor_warr: 36,
+      mouse_sn: '500001',
+      mouse_warr: 12,
+      keyboard_sn: '250001',
+      keyboard_warr: 12,
+      graphic_card_sn: 'ZAK11PW01704',
+      graphic_card_warr: 36
+    },
+    status: 'SOLD',
+    assigned_party_id: 2,
+    assigned_party_name: 'In-vo it industry pvt. Ltd.',
+    dispatch_date: '2026-10-01',
+    sale_info: {
+      invoice_no: 'INV-CG-012501',
+      invoice_date: '2026-11-06',
+      customer_name: 'AC TRIBLE DIPARTMENT',
+      zila: 'BILASPUR',
+      seller_party_id: 2,
+      seller_party_name: 'In-vo it industry pvt. Ltd.',
+      sale_type: 'DISTRIBUTOR',
+      warranty_start: '2026-11-06',
+      warranty_end: '2029-11-06'
+    }
+  },
+  // ALL IN ONE PC 2 (In Stock with Distributor In-vo it industry, ready to sell)
+  {
+    unit_id: 12,
+    category_id: 6,
+    category_name: 'ALL IN ONE PC',
+    model_no: 'IN22-0125DS',
+    product_name: 'INVO All In One PC 23.8" FHD i3',
+    serial_no: 'IN22I35002',
+    warranty_months: 36,
+    specs: {
+      cabinet_sn: 'CX90918108',
+      cabinet_warr: 12,
+      motherboard_sn: 'H61M1112C09S4894',
+      motherboard_warr: 36,
+      ram_sn: '1.2E+07',
+      ram_size: '16 GB',
+      ram_warr: 36,
+      ssd_sn: '12050028',
+      ssd_size: '512 GB',
+      ssd_warr: 36,
+      processor: 'i3 12th gen',
+      processor_sn: 'U6692PF301274',
+      processor_warr: 36,
+      monitor_sn: '9I00725100014A',
+      screen_size: '23.8" FHD IPS',
+      monitor_warr: 36,
+      mouse_sn: '500002',
+      mouse_warr: 12,
+      keyboard_sn: '250002',
+      keyboard_warr: 12,
+      graphic_card_sn: 'ZAK11PW01705',
+      graphic_card_warr: 36
+    },
+    status: 'IN_STOCK',
+    assigned_party_id: 2,
+    assigned_party_name: 'In-vo it industry pvt. Ltd.',
+    dispatch_date: '2026-10-01',
+    sale_info: null
+  },
   // COMPUTER 1 (Sold to C TRIBLE DIPARTMEN by In-vo it industry)
   {
     unit_id: 1,
@@ -936,7 +1032,7 @@ function parseInventoryRow(r) {
   return {
     unit_id: Number(r.unit_id),
     category_id: Number(r.category_id),
-    category_name: r.category_name || (r.category_id == 1 ? 'Computer' : r.category_id == 2 ? 'Monitor' : r.category_id == 3 ? 'TV' : r.category_id == 4 ? 'Interactive Panel' : 'LED Bulb'),
+    category_name: r.category_name || (r.category_id == 1 ? 'Computer' : r.category_id == 6 ? 'ALL IN ONE PC' : r.category_id == 2 ? 'Monitor' : r.category_id == 3 ? 'TV' : r.category_id == 4 ? 'Interactive Panel' : 'LED Bulb'),
     model_no: r.model_no,
     product_name: r.product_name,
     serial_no: r.serial_no,
@@ -1102,7 +1198,7 @@ router.post('/inventory', async (req, res) => {
           );
           const itemId = Number(itemRes.insertId);
 
-          if (catId === 1 && specs) {
+          if ((catId === 1 || catId === 6) && specs) {
             await conn.query(
               'INSERT INTO trn_computer_spec (item_id, processor, processor_sn, motherboard_sn, ram_size, ram_sn, ssd_size, ssd_sn, cabinet_sn, monitor_sn, keyboard_sn, mouse_sn, graphic_card_sn, cabinet_warr, motherboard_warr, ram_warr, ssd_warr, processor_warr, monitor_warr, mouse_warr, keyboard_warr, graphic_card_warr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
               [
@@ -1328,7 +1424,7 @@ router.post('/distributor/sell', async (req, res) => {
         const itemId = Number(itemRes.insertId);
 
         const specs = typeof unitRow.specs === 'string' ? JSON.parse(unitRow.specs || '{}') : unitRow.specs;
-        if (Number(unitRow.category_id) === 1 && specs) {
+        if ((Number(unitRow.category_id) === 1 || Number(unitRow.category_id) === 6) && specs) {
           await conn.query(
             'INSERT INTO trn_computer_spec (item_id, processor, processor_sn, motherboard_sn, ram_size, ram_sn, ssd_size, ssd_sn, cabinet_sn, monitor_sn, keyboard_sn, mouse_sn, graphic_card_sn, cabinet_warr, motherboard_warr, ram_warr, ssd_warr, processor_warr, monitor_warr, mouse_warr, keyboard_warr, graphic_card_warr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
@@ -1481,15 +1577,16 @@ router.post('/customers', async (req, res) => {
 
 // Helper to construct individual component warranties breakdown
 function buildPartWarranties(unit, sale) {
-  if (Number(unit.category_id) !== 1 || !unit.specs) return [];
+  if ((Number(unit.category_id) !== 1 && Number(unit.category_id) !== 6) || !unit.specs) return [];
   const s = unit.specs;
+  const isAio = Number(unit.category_id) === 6;
   const parts = [
     { key: 'Motherboard', name: 'Motherboard', sn: s.motherboard_sn, detail: 'Mainboard', w: s.motherboard_warr || unit.warranty_months || 36 },
     { key: 'Processor', name: 'Processor (CPU)', sn: s.processor_sn, detail: s.processor || 'CPU', w: s.processor_warr || unit.warranty_months || 36 },
-    { key: 'RAM', name: 'RAM Memory', sn: s.ram_sn, detail: s.ram_size || 'RAM', w: s.ram_warr || unit.warranty_months || 36 },
-    { key: 'SSD', name: 'Solid State Drive (SSD)', sn: s.ssd_sn, detail: s.ssd_size || 'SSD Storage', w: s.ssd_warr || unit.warranty_months || 36 },
-    { key: 'Cabinet', name: 'Cabinet & Power Supply', sn: s.cabinet_sn, detail: 'Cabinet / SMPS', w: s.cabinet_warr || 12 },
-    { key: 'Monitor', name: 'Monitor Screen', sn: s.monitor_sn, detail: 'Display Unit', w: s.monitor_warr || unit.warranty_months || 36 },
+    { key: 'RAM', name: 'RAM Memory', sn: s.ram_sn, detail: (s.ram_size ? s.ram_size + ' RAM' : 'RAM'), w: s.ram_warr || unit.warranty_months || 36 },
+    { key: 'SSD', name: 'Solid State Drive (SSD)', sn: s.ssd_sn, detail: (s.ssd_size ? s.ssd_size + ' SSD' : 'SSD Storage'), w: s.ssd_warr || unit.warranty_months || 36 },
+    { key: 'Cabinet', name: isAio ? 'AIO Chassis & Power Supply' : 'Cabinet & Power Supply', sn: s.cabinet_sn, detail: isAio ? 'AIO Body / SMPS' : 'Cabinet / SMPS', w: s.cabinet_warr || 12 },
+    { key: 'Monitor', name: isAio ? 'Built-in Display Screen (AIO Monitor)' : 'Monitor Screen', sn: s.monitor_sn, detail: s.screen_size || (isAio ? '23.8" FHD IPS Panel' : 'Display Unit'), w: s.monitor_warr || unit.warranty_months || 36 },
     { key: 'Keyboard', name: 'Keyboard', sn: s.keyboard_sn, detail: 'Input Peripheral', w: s.keyboard_warr || 12 },
     { key: 'Mouse', name: 'Optical Mouse', sn: s.mouse_sn, detail: 'Input Peripheral', w: s.mouse_warr || 12 },
     { key: 'GraphicCard', name: 'Graphic Card (GPU)', sn: s.graphic_card_sn, detail: 'Video Adapter', w: s.graphic_card_warr || unit.warranty_months || 36 },
@@ -1526,6 +1623,8 @@ function buildPartWarranties(unit, sale) {
 // 8. Warranty Check API (SEARCH DIRECTLY IN MARIADB BY PRIMARY SN, COMPONENT SN, OR INVOICE ID)
 router.get('/warranty/:serialNumber', async (req, res) => {
   const target = (req.params.serialNumber || '').trim().toUpperCase();
+  const reqCategory = (req.query.category || '').trim();
+  const isCategoryFilter = reqCategory && !['ALL', 'ALL CATEGORIES'].includes(reqCategory.toUpperCase());
 
   let foundUnit = null;
 
@@ -1550,6 +1649,10 @@ router.get('/warranty/:serialNumber', async (req, res) => {
         foundUnit = parsed;
         break;
       }
+      if (parsed.model_no && parsed.model_no.toUpperCase() === target) {
+        foundUnit = parsed;
+        break;
+      }
       if (parsed.specs) {
         for (const val of Object.values(parsed.specs)) {
           if (typeof val === 'string' && val.trim().toUpperCase() === target) {
@@ -1569,6 +1672,7 @@ router.get('/warranty/:serialNumber', async (req, res) => {
     foundUnit = MOCK_INVENTORY.find(u => {
       if (u.serial_no.toUpperCase() === target) return true;
       if (u.sale_info && u.sale_info.invoice_no && u.sale_info.invoice_no.toUpperCase() === target) return true;
+      if (u.model_no && u.model_no.toUpperCase() === target) return true;
       if (u.specs) {
         for (const val of Object.values(u.specs)) {
           if (typeof val === 'string' && val.trim().toUpperCase() === target) return true;
@@ -1579,6 +1683,22 @@ router.get('/warranty/:serialNumber', async (req, res) => {
   }
 
   if (foundUnit) {
+    // If category filter is specified, check for category match
+    if (isCategoryFilter && foundUnit.category_name) {
+      const unitCat = foundUnit.category_name.trim().toLowerCase();
+      const filterCat = reqCategory.trim().toLowerCase();
+      if (unitCat !== filterCat && !unitCat.includes(filterCat) && !filterCat.includes(unitCat)) {
+        return res.status(200).json({
+          found: false,
+          wrongCategory: true,
+          searchedCategory: reqCategory,
+          actualCategory: foundUnit.category_name,
+          serialNo: foundUnit.serial_no,
+          productName: foundUnit.product_name,
+          message: `Product serial "${foundUnit.serial_no}" belongs to the "${foundUnit.category_name}" category, but your current search is filtered by "${reqCategory}".`
+        });
+      }
+    }
     const sale = foundUnit.sale_info;
     const isSoldWithInvoice = Boolean(
       (foundUnit.status === 'SOLD' || sale) &&

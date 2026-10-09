@@ -1,2 +1,328 @@
-<app-hero></app-hero>
-<app-features></app-features>
+<!-- ============================================================
+     1. TOP PROJECT CAROUSEL (FULL BANNER HERO)
+     ============================================================ -->
+<section class="carousel-hero-section" (mouseenter)="pauseSlide()" (mouseleave)="resumeSlide()">
+  @for (slide of slides; track slide.title; let i = $index) {
+    <div class="carousel-slide" [class.active]="i === currentSlide">
+      <!-- Full Banner Background Image -->
+      <div class="slide-bg-wrapper">
+        <img [src]="slide.image" [alt]="slide.alt" class="slide-full-bg" />
+        <div class="slide-light-gradient"></div>
+      </div>
+
+      <!-- Slide Foreground Content -->
+      <div class="carousel-container">
+        <div class="slide-caption-card">
+          <div class="slide-tag-row">
+            <span class="slide-tag">{{ slide.tag }}</span>
+            <span class="slide-badge">{{ slide.badge }}</span>
+          </div>
+
+          <h1 class="slide-title">{{ slide.title }}</h1>
+          <p class="slide-subtitle">{{ slide.subtitle }}</p>
+
+          <!-- Key Feature Highlights -->
+          <div class="slide-highlights">
+            @for (item of slide.highlights; track item) {
+              <div class="highlight-chip">
+                <span class="material-icons-outlined">verified</span>
+                <span>{{ item }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Slide CTAs -->
+          <div class="slide-actions">
+            <a [routerLink]="slide.primaryCtaLink" class="btn btn-primary">
+              <span>{{ slide.primaryCtaText }}</span>
+              <span class="material-icons-outlined">arrow_forward</span>
+            </a>
+            <a [routerLink]="slide.secondaryCtaLink" class="btn btn-outline">
+              <span class="material-icons-outlined">verified_user</span>
+              <span>{{ slide.secondaryCtaText }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Carousel Navigation Controls -->
+  <button class="carousel-nav-btn prev-btn" (click)="prevSlide()" aria-label="Previous Slide">
+    <span class="material-icons-outlined">chevron_left</span>
+  </button>
+  <button class="carousel-nav-btn next-btn" (click)="nextSlide()" aria-label="Next Slide">
+    <span class="material-icons-outlined">chevron_right</span>
+  </button>
+
+  <!-- Indicators Dots -->
+  <div class="carousel-indicators">
+    @for (slide of slides; track slide.title; let idx = $index) {
+      <button
+        class="indicator-dot"
+        [class.active]="idx === currentSlide"
+        (click)="goToSlide(idx)"
+        [attr.aria-label]="'Go to slide ' + (idx + 1)">
+        <span class="dot-inner"></span>
+      </button>
+    }
+  </div>
+
+  <!-- Slide Counter -->
+  <div class="slide-counter">
+    <span class="current-num">0{{ currentSlide + 1 }}</span>
+    <span class="divider">/</span>
+    <span class="total-num">0{{ slides.length }}</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     3. PRODUCTS ECOSYSTEM SHOWCASE (/products)
+     ============================================================ -->
+<section class="section-showcase products-showcase">
+  <div class="home-container">
+    <div class="section-header">
+      <div class="section-badge">
+        <span class="material-icons-outlined">devices</span>
+        <span>Hardware Portfolio</span>
+      </div>
+      <h2>Engineered for Performance & Scale</h2>
+      <p class="section-subtitle">
+        Explore our lineup of commercial workstations, interactive classrooms, smart displays, and commercial lighting.
+      </p>
+    </div>
+
+    <div class="product-cards-grid">
+      @for (prod of featuredProducts; track prod.model) {
+        <div class="product-card">
+          <div class="card-badge">{{ prod.badge }}</div>
+
+          <div class="card-media">
+            @if (prod.image) {
+              <img [src]="prod.image" [alt]="prod.name" class="product-thumb" />
+            } @else {
+              <div class="thumb-icon-placeholder">
+                <span class="material-icons-outlined">{{ prod.icon || 'devices' }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-content">
+            <div class="card-meta">
+              <span class="prod-category">{{ prod.category }}</span>
+              <span class="prod-warranty">{{ prod.warranty }} Warranty</span>
+            </div>
+
+            <h3 class="prod-title">{{ prod.name }}</h3>
+            <p class="prod-model">Model: {{ prod.model }}</p>
+
+            <ul class="prod-specs-list">
+              @for (spec of prod.specs; track spec) {
+                <li>
+                  <span class="material-icons-outlined">done</span>
+                  <span>{{ spec }}</span>
+                </li>
+              }
+            </ul>
+
+            <div class="card-footer">
+              <a routerLink="/products" class="card-link-btn">
+                <span>View Full Specifications</span>
+                <span class="material-icons-outlined">chevron_right</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Section Bottom CTA -->
+    <div class="section-bottom-cta">
+      <a routerLink="/products" class="btn btn-primary btn-large">
+        <span>Browse All Products & Technical Sheets</span>
+        <span class="material-icons-outlined">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     4. COMPREHENSIVE SERVICES & SUPPORT (/service)
+     ============================================================ -->
+<section class="section-showcase services-showcase">
+  <div class="home-container">
+    <div class="section-header">
+      <div class="section-badge">
+        <span class="material-icons-outlined">build_circle</span>
+        <span>Lifecycle Support</span>
+      </div>
+      <h2>Enterprise Technical Services & AMC</h2>
+      <p class="section-subtitle">
+        We ensure zero downtime for your institutions and business infrastructure through end-to-end support.
+      </p>
+    </div>
+
+    <div class="services-cards-grid">
+      @for (srv of servicesList; track srv.title) {
+        <div class="service-card">
+          <div class="srv-icon-box">
+            <span class="material-icons-outlined">{{ srv.icon }}</span>
+          </div>
+          <h3 class="srv-title">{{ srv.title }}</h3>
+          <p class="srv-desc">{{ srv.desc }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="section-bottom-cta">
+      <a routerLink="/service" class="btn btn-outline btn-large">
+        <span>View All Services & AMC Options</span>
+        <span class="material-icons-outlined">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     5. ABOUT INVO IT & MAKE-IN-INDIA (/about)
+     ============================================================ -->
+<section class="section-showcase about-showcase">
+  <div class="home-container">
+    <div class="about-banner-card">
+      <div class="about-grid">
+        <div class="about-text-col">
+          <div class="section-badge badge-white">
+            <span class="material-icons-outlined">domain</span>
+            <span>INVO IT Industries Pvt. Ltd.</span>
+          </div>
+          <h2>Empowering India with Technology & Innovation</h2>
+          <p class="about-lead">
+            We are dedicated to building a trusted Indian technology brand engineered to deliver high-quality computing, interactive education displays, and enterprise electronics.
+          </p>
+          <p class="about-desc">
+            With a customer-first philosophy, rigorous quality assurance, and institutional-grade build materials, we power businesses, schools, and organizations across the nation.
+          </p>
+
+          <div class="about-metrics-row">
+            @for (metric of companyHighlights; track metric.label) {
+              <div class="metric-box">
+                <span class="metric-num">{{ metric.number }}</span>
+                <span class="metric-lbl">{{ metric.label }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="about-cta-row">
+            <a routerLink="/about" class="btn btn-primary">
+              <span>Read Our Full Story & Vision</span>
+              <span class="material-icons-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="about-visual-col">
+          <div class="values-pill-card">
+            <div class="value-item">
+              <span class="material-icons-outlined">flag</span>
+              <div>
+                <h4>Make in India Vision</h4>
+                <p>Contributing to indigenous technological growth and self-reliance.</p>
+              </div>
+            </div>
+            <div class="value-item">
+              <span class="material-icons-outlined">verified</span>
+              <div>
+                <h4>Certified Quality Standards</h4>
+                <p>Every motherboard, display, and power module undergoes stringent quality checks.</p>
+              </div>
+            </div>
+            <div class="value-item">
+              <span class="material-icons-outlined">handshake</span>
+              <div>
+                <h4>Long-Term Institutional Trust</h4>
+                <p>Dedicated partnership with government, education, and corporate entities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     6. REGISTERED OFFICE & DIRECT CONTACT DESK (/contact)
+     ============================================================ -->
+<section class="section-showcase contact-showcase">
+  <div class="home-container">
+    <div class="section-header">
+      <div class="section-badge">
+        <span class="material-icons-outlined">contact_phone</span>
+        <span>Get in Touch</span>
+      </div>
+      <h2>Connect with Our Corporate & Support Teams</h2>
+      <p class="section-subtitle">
+        Visit our registered corporate office or reach our direct email and phone desks.
+      </p>
+    </div>
+
+    <div class="contact-cards-grid">
+      <!-- Registered Office Card -->
+      <div class="contact-box office-box">
+        <div class="box-icon">
+          <span class="material-icons-outlined">location_on</span>
+        </div>
+        <div class="box-info">
+          <span class="box-label">Registered Corporate Office</span>
+          <p class="box-address">BLOCK-A, Umiya Market, Near Madhav Timber, Bhanpuri, Raipur, C.G.- 492003</p>
+        </div>
+      </div>
+
+      <!-- Toll-Free Phone -->
+      <a href="tel:0000-000-0000" class="contact-box link-box">
+        <div class="box-icon">
+          <span class="material-icons-outlined">phone</span>
+        </div>
+        <div class="box-info">
+          <span class="box-label">Toll-Free Customer Line</span>
+          <p class="box-main">0000-000-0000</p>
+          <span class="box-sub">Mon - Sat: 10:00 AM - 6:00 PM</span>
+        </div>
+        <span class="material-icons-outlined arrow">north_east</span>
+      </a>
+
+      <!-- Support Email -->
+      <a href="mailto:support@invo.co.in" class="contact-box link-box">
+        <div class="box-icon">
+          <span class="material-icons-outlined">support_agent</span>
+        </div>
+        <div class="box-info">
+          <span class="box-label">Warranty & Technical Support</span>
+          <p class="box-main">support&#64;invo.co.in</p>
+          <span class="box-sub">Fast Turnaround Resolution</span>
+        </div>
+        <span class="material-icons-outlined arrow">north_east</span>
+      </a>
+
+      <!-- Sales Email -->
+      <a href="mailto:sales@invo.co.in" class="contact-box link-box">
+        <div class="box-icon">
+          <span class="material-icons-outlined">storefront</span>
+        </div>
+        <div class="box-info">
+          <span class="box-label">Commercial & Institutional Sales</span>
+          <p class="box-main">sales&#64;invo.co.in</p>
+          <span class="box-sub">Bulk Quotations & Orders</span>
+        </div>
+        <span class="material-icons-outlined arrow">north_east</span>
+      </a>
+    </div>
+
+    <div class="section-bottom-cta">
+      <a routerLink="/contact" class="btn btn-primary btn-large">
+        <span>Visit Official Contact Desk & Direct Desks</span>
+        <span class="material-icons-outlined">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>

@@ -10,5 +10,5 @@ import { FooterComponent } from './components/footer/footer.component';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'MWC Reference Portal';
+  title = 'INVO IT Reference Portal';
 }

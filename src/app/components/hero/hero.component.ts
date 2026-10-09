@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-hero',
@@ -9,33 +10,16 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './hero.component.css'
 })
 export class HeroComponent {
+  private router = inject(Router);
+
   serialNumber = '';
   isSearching = false;
   searchResult: { found: boolean; message: string; status?: string; daysRemaining?: number } | null = null;
 
   checkWarranty() {
-    if (!this.serialNumber.trim()) return;
-
-    this.isSearching = true;
-    this.searchResult = null;
-
-    // Simulate API call
-    setTimeout(() => {
-      this.isSearching = false;
-      if (this.serialNumber.toUpperCase().startsWith('MWC')) {
-        this.searchResult = {
-          found: true,
-          message: 'Warranty Active',
-          status: 'Active',
-          daysRemaining: 245
-        };
-      } else {
-        this.searchResult = {
-          found: false,
-          message: 'No product found with this serial number. Please check and try again.'
-        };
-      }
-    }, 1500);
+    const serial = this.serialNumber.trim();
+    if (!serial) return;
+    this.router.navigate(['/warranty-check'], { queryParams: { serial } });
   }
 
   clearSearch() {

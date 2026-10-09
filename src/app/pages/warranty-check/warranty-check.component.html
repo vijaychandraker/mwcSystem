@@ -12,21 +12,46 @@
       <div class="search-header">
         <span class="material-icons-outlined search-header-icon">verified_user</span>
         <h2>Check Product Warranty</h2>
-        <p>Enter your INVO IT product serial number below to view instant status and invoice details.</p>
+        <p>Select your product category and enter serial number or invoice details to view instant status.</p>
       </div>
 
       <div class="search-form">
-        <div class="input-group">
-          <span class="material-icons-outlined input-icon">qr_code_scanner</span>
-          <input
-            type="text"
-            [(ngModel)]="serialNumber"
-            placeholder="Enter Serial Number (e.g., INVO-DP500-2026001 or INVO-IFP65-2026003)"
-            class="warranty-input"
-            id="warranty-serial-input"
-            (keyup.enter)="checkWarranty()"
-          />
+        <div class="search-form-row">
+          <!-- Category Select Dropdown -->
+          <div class="category-select-box">
+            <span class="material-icons-outlined cat-select-icon">{{ currentCategoryConfig.icon }}</span>
+            <select
+              [(ngModel)]="selectedCategory"
+              (ngModelChange)="selectCategory($event)"
+              class="cat-dropdown-select"
+              id="warranty-category-dropdown"
+              title="Filter by Category">
+              @for (cat of categories; track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+            <span class="material-icons-outlined cat-select-arrow">expand_more</span>
+          </div>
+
+          <!-- Serial Number Input -->
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">qr_code_scanner</span>
+            <input
+              type="text"
+              [(ngModel)]="serialNumber"
+              [placeholder]="currentCategoryConfig.placeholder"
+              class="warranty-input"
+              id="warranty-serial-input"
+              (keyup.enter)="checkWarranty()"
+            />
+            @if (serialNumber) {
+              <button type="button" class="clear-input-btn" (click)="serialNumber = ''" title="Clear input">
+                <span class="material-icons-outlined">close</span>
+              </button>
+            }
+          </div>
         </div>
+
         <div class="search-actions">
           <button
             class="btn-check"
@@ -50,25 +75,21 @@
         </div>
       </div>
 
-      <!-- Note Callout Banner -->
+      <!-- Note Callout Banner with Dynamic Category Sample & Helper -->
       <div class="note-banner">
         <div class="note-left">
           <span class="material-icons-outlined note-bulb">lightbulb</span>
           <div class="note-text">
-            <strong>NOTE : Each INVO IT product has a Unique Serial Number.</strong>
-            <p>It is printed on the product label, packaging box, and official Tax Invoice.</p>
+            <strong>{{ currentCategoryConfig.name }} Serial Location:</strong>
+            <p>{{ currentCategoryConfig.locationHint }}</p>
           </div>
-        </div>
-        <div class="barcode-badge">
-          <span class="barcode-tag">Sample SN: <strong>INVO-DP500-2026001</strong></span>
-          <div class="barcode-lines"></div>
         </div>
       </div>
     </div>
 
     <!-- Result Cards -->
     @if (warrantyResult) {
-      <div class="warranty-result animate-fade-in-up">
+      <div class="warranty-result animate-fade-in-up" id="warranty-result-container">
         @if (warrantyResult.found) {
           @if (warrantyResult.status === 'Active') {
             <!-- RESULT - WARRANTY ACTIVE -->
@@ -142,7 +163,7 @@
                   <div class="parts-warranty-section">
                     <div class="parts-warr-heading">
                       <span class="material-icons-outlined">verified</span>
-                      <span>Computer Parts Individual Warranty Details</span>
+                      <span>Computer & All In One PC Parts Warranty Details</span>
                     </div>
                     <div class="parts-warr-table-container">
                       <table class="parts-warr-table">
@@ -339,6 +360,54 @@
               </a>
             </div>
           }
+        } @else if (warrantyResult.wrongCategory) {
+          <!-- CATEGORY MISMATCH -->
+          <div class="result-card-mockup warning-card">
+            <div class="card-status-header pending-header">
+              <div class="shield-icon amber-shield">
+                <span class="material-icons-outlined">swap_horiz</span>
+              </div>
+              <div class="status-title-group">
+                <h3 class="status-title text-amber">CATEGORY MISMATCH</h3>
+                <p class="status-subtitle">Product serial found under a different product category.</p>
+              </div>
+            </div>
+
+            <div class="mockup-table">
+              <div class="table-row">
+                <span class="col-label">Queried Serial</span>
+                <span class="col-val font-mono"><code>{{ warrantyResult.serialNo }}</code></span>
+              </div>
+              <div class="table-row">
+                <span class="col-label">Actual Product</span>
+                <span class="col-val font-bold">{{ warrantyResult.productName }}</span>
+              </div>
+              <div class="table-row">
+                <span class="col-label">Actual Category</span>
+                <span class="col-val text-green font-bold">{{ warrantyResult.actualCategory }}</span>
+              </div>
+              <div class="table-row">
+                <span class="col-label">Your Filter</span>
+                <span class="col-val text-red font-bold">{{ warrantyResult.searchedCategory }}</span>
+              </div>
+            </div>
+
+            <div class="info-alert amber-alert">
+              <span class="material-icons-outlined">info</span>
+              <span>{{ warrantyResult.message }}</span>
+            </div>
+
+            <div class="category-switch-actions">
+              <button class="btn-check" (click)="switchCategoryAndSearch(warrantyResult.actualCategory)">
+                <span class="material-icons-outlined">arrow_forward</span>
+                Switch to {{ warrantyResult.actualCategory }} & View Warranty
+              </button>
+              <button class="btn-reset" (click)="switchCategoryAndSearch('All')">
+                <span class="material-icons-outlined">apps</span>
+                View in All Categories
+              </button>
+            </div>
+          </div>
         } @else {
           <!-- NOT FOUND -->
           <div class="result-card-mockup error-card">
@@ -353,9 +422,9 @@
             </div>
             <p class="error-msg-text">{{ warrantyResult.message }}</p>
             <div class="error-links-group">
-              <a href="tel:9876543210" class="btn-outline">
+              <a href="tel:0000-000-0000" class="btn-outline">
                 <span class="material-icons-outlined">phone</span>
-                Call Helpline
+                Call Helpline (0000-000-0000)
               </a>
               <a routerLink="/contact" class="btn-outline">
                 <span class="material-icons-outlined">email</span>

@@ -316,7 +316,8 @@ INSERT INTO mst_category (category_id, category_name) VALUES
 (2, 'Monitor'),
 (3, 'TV'),
 (4, 'Interactive Panel'),
-(5, 'LED Bulb');
+(5, 'LED Bulb'),
+(6, 'ALL IN ONE PC');
 
 -- 4. MASTER TABLE : PRODUCT MODEL
 INSERT INTO mst_product_model (model_id, category_id, brand, model_no, product_name, warranty_month, status) VALUES

@@ -17,32 +17,18 @@ export class ContactComponent {
       tag: 'Helpdesk & Warranty'
     },
     {
-      icon: 'storefront',
-      label: 'Sales & Distribution',
-      value: 'sales@invo.co.in',
-      link: 'mailto:sales@invo.co.in',
-      tag: 'Commercial & Orders'
-    },
-    {
       icon: 'info',
       label: 'General Information',
       value: 'info@invo.co.in',
       link: 'mailto:info@invo.co.in',
       tag: 'Inquiries & Info'
-    },
-    {
-      icon: 'badge',
-      label: 'Executive Contact',
-      value: 'rajagrawal@invo.co.in',
-      link: 'mailto:rajagrawal@invo.co.in',
-      tag: 'Direct Line'
     }
   ];
 
   generalInfo = [
-    { icon: 'phone', label: 'Toll-Free Phone', value: '1800-123-4567', link: 'tel:1800-123-4567' },
-    { icon: 'location_on', label: 'Registered Office', value: 'Plot 42, Tech Park, Okhla Phase 3, Delhi / Bilaspur (CG)', link: '#' },
-    { icon: 'schedule', label: 'Working Hours', value: 'Mon - Sat: 9:00 AM - 6:00 PM', link: '#' }
+    { icon: 'phone', label: 'Toll-Free Phone', value: '0000-000-0000', link: 'tel:0000-000-0000' },
+    { icon: 'location_on', label: 'Registered Office', value: 'BLOCK-A, Umiya Market, Near Madhav Timber, Bhanpuri, Raipur, C.G.- 492003', link: '#' },
+    { icon: 'schedule', label: 'Working Hours', value: 'Mon - Sat: 10:00 AM - 6:00 PM', link: '#' }
   ];
 
   get contactInfo() {

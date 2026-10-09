@@ -155,7 +155,7 @@
                     </td>
                     <td><code class="serial-code">{{ item.serial_no }}</code></td>
                     <td style="font-size: 11px; max-width: 220px; line-height: 1.4;">
-                      @if (item.category_id === 1) {
+                      @if (item.category_id === 1 || item.category_id === 6) {
                         <span>CPU: {{ item.specs.processor }} | RAM: {{ item.specs.ram_size }} | SSD: {{ item.specs.ssd_size }}</span>
                       } @else if (item.category_id === 2 || item.category_id === 3) {
                         <span>Size: {{ item.specs.screen_size }}</span>
