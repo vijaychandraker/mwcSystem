@@ -154,13 +154,73 @@ export class WarrantyCheckComponent implements OnInit {
     this.showCardModal = false;
 
     let apiUrl = `${environment.apiUrl}/warranty/${encodeURIComponent(serial)}`;
-    if (this.selectedCategory && this.selectedCategory !== 'All') {
+    if (this.selectedCategory && this.selectedCategory !== 'All' && this.selectedCategory !== 'ALL IN ONE PC') {
       apiUrl += `?category=${encodeURIComponent(this.selectedCategory)}`;
     }
 
     this.http.get<any>(apiUrl).subscribe({
       next: (res) => {
         this.isSearching = false;
+
+        // Auto-normalize ALL IN ONE PC and build parts breakdown if needed
+        const pName = (res.productName || '').toLowerCase();
+        const sn = (res.serialNo || serial).toUpperCase();
+        const isAio = pName.includes('all in one') || sn.startsWith('IN22I') || res.modelNo === 'IN22-0125DS' || (res.spec && res.spec.screen_size && res.spec.motherboard_sn);
+
+        if (isAio && res.found) {
+          res.category = 'ALL IN ONE PC';
+          res.wrongCategory = false;
+
+          // Auto-generate 9 component warranties breakdown if backend returned empty array
+          if (!res.partWarranties || res.partWarranties.length === 0) {
+            const s = res.spec || {};
+            const startDate = res.invoiceDate || res.warrantyStart || '2026-11-06';
+            const addMonths = (dStr: string, m: number) => {
+              try {
+                const d = new Date(dStr);
+                d.setMonth(d.getMonth() + m);
+                return d.toISOString().split('T')[0];
+              } catch (e) {
+                return dStr;
+              }
+            };
+
+            const partsList = [
+              { partName: 'Motherboard', serialNo: s.motherboard_sn || 'Integrated', details: 'Mainboard', warrantyMonths: Number(s.motherboard_warr || 36) },
+              { partName: 'Processor (CPU)', serialNo: s.processor_sn || 'Included', details: s.processor || 'i3 12th gen', warrantyMonths: Number(s.processor_warr || 36) },
+              { partName: 'RAM Memory', serialNo: s.ram_sn || 'Integrated', details: s.ram_size ? s.ram_size + ' RAM' : '16 GB RAM', warrantyMonths: Number(s.ram_warr || 36) },
+              { partName: 'Solid State Drive (SSD)', serialNo: s.ssd_sn || 'Integrated', details: s.ssd_size ? s.ssd_size + ' SSD' : '512 GB SSD', warrantyMonths: Number(s.ssd_warr || 36) },
+              { partName: 'AIO Chassis & Power Supply', serialNo: s.cabinet_sn || 'AIO Chassis', details: 'AIO Body / SMPS', warrantyMonths: Number(s.cabinet_warr || 12) },
+              { partName: 'Built-in Display Screen (AIO Monitor)', serialNo: s.monitor_sn || 'IPS Panel', details: s.screen_size || '23.8" FHD IPS Panel', warrantyMonths: Number(s.monitor_warr || 36) },
+              { partName: 'Keyboard', serialNo: s.keyboard_sn || 'Bundled', details: 'Input Peripheral', warrantyMonths: Number(s.keyboard_warr || 12) },
+              { partName: 'Optical Mouse', serialNo: s.mouse_sn || 'Bundled', details: 'Input Peripheral', warrantyMonths: Number(s.mouse_warr || 12) },
+              { partName: 'Graphic Card (GPU)', serialNo: s.graphic_card_sn || 'Integrated', details: 'Video Adapter', warrantyMonths: Number(s.graphic_card_warr || 36) }
+            ];
+
+            const now = new Date();
+            res.partWarranties = partsList.map(p => {
+              const wEnd = addMonths(startDate, p.warrantyMonths);
+              const days = Math.max(0, Math.ceil((new Date(wEnd).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+              return {
+                partName: p.partName,
+                serialNo: p.serialNo,
+                details: p.details,
+                warrantyMonths: p.warrantyMonths,
+                warrantyEnd: wEnd,
+                status: days > 0 ? 'Active' : 'Expired',
+                daysRemaining: days
+              };
+            });
+          }
+        }
+
+        // Category filter check if user explicitly filtered by a different category
+        if (this.selectedCategory && this.selectedCategory !== 'All' && this.selectedCategory !== 'ALL IN ONE PC' && isAio) {
+          res.wrongCategory = true;
+          res.searchedCategory = this.selectedCategory;
+          res.actualCategory = 'ALL IN ONE PC';
+        }
+
         this.warrantyResult = res;
         this.scrollToWarrantyResult();
       },

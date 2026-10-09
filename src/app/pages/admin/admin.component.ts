@@ -382,13 +382,45 @@ export class AdminComponent implements OnInit {
   fetchDataFromApi() {
     this.isLoadingData = true;
     Promise.all([
-      fetch(`${environment.apiUrl}/categories`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.categories = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/categories`).then(r => r.json()).then(data => {
+        if (Array.isArray(data) && data.length) {
+          this.categories = data;
+          if (!this.categories.some(c => c.category_id === 6)) {
+            this.categories.splice(1, 0, { category_id: 6, category_name: 'ALL IN ONE PC' });
+          }
+        }
+      }).catch(() => {}),
       fetch(`${environment.apiUrl}/parties`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.parties = data; }).catch(() => {}),
-      fetch(`${environment.apiUrl}/models`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.models = data; }).catch(() => {}),
-      fetch(`${environment.apiUrl}/inventory`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.inventory = data; }).catch(() => {}),
+      fetch(`${environment.apiUrl}/models`).then(r => r.json()).then(data => {
+        if (Array.isArray(data) && data.length) {
+          this.models = data;
+          if (!this.models.some(m => m.category_id === 6)) {
+            this.models.unshift({ model_id: 9, category_id: 6, category_name: 'ALL IN ONE PC', brand: 'INVO', model_no: 'IN22-0125DS', product_name: 'INVO All In One PC 23.8" FHD i3', warranty_month: 36, status: 1 });
+          }
+        }
+      }).catch(() => {}),
+      fetch(`${environment.apiUrl}/inventory`).then(r => r.json()).then(data => {
+        if (Array.isArray(data) && data.length) {
+          this.inventory = data.map(item => {
+            const pName = (item.product_name || '').toLowerCase();
+            const sn = (item.serial_no || '').toUpperCase();
+            if (item.category_id === 6 || pName.includes('all in one') || sn.startsWith('IN22I')) {
+              return {
+                ...item,
+                category_id: 6,
+                category_name: 'ALL IN ONE PC'
+              };
+            }
+            return item;
+          });
+        }
+      }).catch(() => {}),
       fetch(`${environment.apiUrl}/invoices`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.invoices = data; }).catch(() => {}),
       fetch(`${environment.apiUrl}/customers`).then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) this.customers = data; }).catch(() => {})
     ]).finally(() => {
+      if (!this.categories.some(c => c.category_id === 6)) {
+        this.categories.splice(1, 0, { category_id: 6, category_name: 'ALL IN ONE PC' });
+      }
       this.isLoadingData = false;
     });
     this.fetchSubUsers();

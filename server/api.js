@@ -1029,10 +1029,14 @@ function parseInventoryRow(r) {
   if (r.sale_info) {
     saleInfoObj = typeof r.sale_info === 'string' ? JSON.parse(r.sale_info || 'null') : r.sale_info;
   }
+  const isAio = Number(r.category_id) === 6 || (r.product_name && r.product_name.toLowerCase().includes('all in one')) || (r.serial_no && r.serial_no.startsWith('IN22I'));
+  const catId = isAio ? 6 : Number(r.category_id);
+  const catName = isAio ? 'ALL IN ONE PC' : (r.category_name || (catId == 1 ? 'Computer' : catId == 2 ? 'Monitor' : catId == 3 ? 'TV' : catId == 4 ? 'Interactive Panel' : 'LED Bulb'));
+
   return {
     unit_id: Number(r.unit_id),
-    category_id: Number(r.category_id),
-    category_name: r.category_name || (r.category_id == 1 ? 'Computer' : r.category_id == 6 ? 'ALL IN ONE PC' : r.category_id == 2 ? 'Monitor' : r.category_id == 3 ? 'TV' : r.category_id == 4 ? 'Interactive Panel' : 'LED Bulb'),
+    category_id: catId,
+    category_name: catName,
     model_no: r.model_no,
     product_name: r.product_name,
     serial_no: r.serial_no,
